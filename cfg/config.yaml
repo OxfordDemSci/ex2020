@@ -1,0 +1,48 @@
+skeleton:
+  year:
+    min: 2000
+    max: 2020
+  age:
+    min: 0
+    max: 100
+  sex: {Male: 'Male', Female: 'Female'}
+  region: [
+    'AT',
+    'AU',
+    'BE',
+    'BG',
+    'CA',
+    'CH',
+    'CL',
+    'CZ',
+    'DE',
+    'DK',
+    'EE',
+    'ES',
+    'FI',
+    'FR',
+    'GB-EAW',
+    'GB-NIR',
+    'GB-SCT',
+    'GR',
+    'HR',
+    'HU',
+    'IL',
+    'IS',
+    'IT',
+    'KR',
+    'LT',
+    'LU',
+    'LV',
+    'NL',
+    'NO',
+    'NZ',
+    'PL',
+    'PT',
+    'RU',
+    'SE',
+    'SI',
+    'SK',
+    'TW',
+    'US'
+]
