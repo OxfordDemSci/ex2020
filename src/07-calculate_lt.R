@@ -16,7 +16,7 @@ cnst <- within(cnst, {
     'GB-EAW', 'GB-NIR', 'GB-SCT',
     'HU', 'IL', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI'
   )
-  out_path = glue('{wd}/out')
+  path_out = glue('{wd}/out')
 })
 
 dat <- list()
@@ -24,7 +24,7 @@ fig <- list()
 
 # Data ------------------------------------------------------------
 
-dat$lt_input <- readRDS(glue('{wd}/out/lt_input.rds'))
+dat$lt_input <- readRDS(glue('{cnst$path_out}/lt_input.rds'))
 
 dat$lt_input_sub <-
   dat$lt_input %>%
@@ -114,7 +114,7 @@ dat$lt_20192020 <-
 
 # Changes in remaining life-expectancy ----------------------------
 
-map(c(0, 60, 80), ~{
+walk(c(0, 60, 80), ~{
   fig[[glue('age{.x}')]] <<-
     dat$lt_20192020 %>%
     filter(x == .x) %>%
@@ -158,4 +158,4 @@ fig$ex_annual_change <-
     subtitle = 'Points mark the average annual change in life-expectancy 2015 to 2019'
   )
 fig$ex_annual_change
-fig_spec$ExportFigure(fig$ex_annual_change, path = cnst$out_path)
+fig_spec$ExportFigure(fig$ex_annual_change, path = cnst$path_out)

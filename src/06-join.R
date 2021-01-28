@@ -5,19 +5,30 @@
 library(here); library(glue)
 library(dplyr); library(readr); library(openxlsx)
 
-
 # Constants -------------------------------------------------------
 
 wd <- here()
 source(glue('{wd}/src/00-global.R'))
 
+cnst <- list()
+cnst <- within(cnst, {
+  # skeleton path
+  path_skeleton = glue('{wd}/tmp/harmonized_skeleton.rds')
+  # population path
+  path_population = glue('{wd}/tmp/harmonized_population.rds')
+  # death path
+  path_death = glue('{wd}/tmp/harmonized_death.rds')
+  # out path of harmonized data
+  path_out = glue('{wd}/out')
+})
+
 dat <- list()
 
 # Data ------------------------------------------------------------
 
-dat$skeleton <- readRDS(glue('{wd}/tmp/harmonized_subsets/skeleton.rds'))
-dat$population <- readRDS(glue('{wd}/tmp/harmonized_subsets/population.rds'))
-dat$death <- readRDS(glue('{wd}/tmp/harmonized_subsets/death.rds'))
+dat$skeleton <- readRDS(cnst$path_skeleton)
+dat$population <- readRDS(cnst$path_population)
+dat$death <- readRDS(cnst$path_death)
 
 # Join ------------------------------------------------------------
 
@@ -25,17 +36,15 @@ dat$lt_input <-
   dat$skeleton %>% 
   mutate(year_has_53_weeks = YearHasIsoWeek53(year)) %>%
   arrange(region_iso, sex, year, age_start) %>%
-  left_join(dat$death %>%
-              select(id, death, n_missing_weeks, n_agegroups_raw),
-            by = 'id') %>%
-  left_join(dat$population %>% select(id, population_midyear), by = 'id')
+  left_join(dat$death, by = 'id') %>%
+  left_join(dat$population, by = 'id')
 
 # Export ----------------------------------------------------------
 
-saveRDS(dat$lt_input, file = glue('{wd}/out/lt_input.rds'))
+saveRDS(dat$lt_input, file = glue('{cnst$path_out}/lt_input.rds'))
 
-write_csv(dat$lt_input, file = glue('{wd}/out/lt_input.csv'))
+write_csv(dat$lt_input, file = glue('{cnst$path_out}/lt_input.csv'))
 
-write.xlsx(dat$lt_input, glue('{wd}/out/lt_input.xlsx'),
+write.xlsx(dat$lt_input, glue('{cnst$path_out}/lt_input.xlsx'),
            keepNA = TRUE, na.string = '.',
            firstRow = TRUE, firstCol = TRUE)

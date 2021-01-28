@@ -36,69 +36,54 @@ source(glue('{wd}/cfg/fig_specs.R'))
 cnst <- list()
 cnst <- within(cnst, {
   # path to global objects
-  global_path = glue('{wd}/src/00-global.R')
+  path_global = glue('{wd}/src/00-global.R')
   # path to pclm output
-  pclm_path = glue('{wd}/tmp/pclm_output')
+  path_pclm = glue('{wd}/tmp')
   # path to logfile for pclm
-  log_path = glue('{wd}/tmp/pclm_output/log.txt')
+  path_pclm_log = glue('{wd}/tmp/pclm_log.txt')
   # skeleton path
-  skeleton_path = glue('{wd}/tmp/harmonized_subsets/skeleton.rds')
+  path_skeleton = glue('{wd}/tmp/harmonized_skeleton.rds')
   # path to stmf data
-  stmf_path = glue('{wd}/dat/stmf')
-  stmf_files = list.files(stmf_path)
+  path_stmf = glue('{wd}/dat/stmf/stmf.rds')
   # where to put the harmonized data
-  out_path_harmonized = glue('{wd}/tmp/harmonized_subsets')
+  path_harmonized = glue('{wd}/tmp/harmonized_death.rds')
   
-  sex_code_stmf =
+  code_sex_stmf =
     c(m = config$skeleton$sex$Male, f = config$skeleton$sex$Female)
   # pclm life-table closeout age
   pclm_highest_age = 110
   # number of cores to run pclm on
-  n_cores = 8
+  n_cores = 4
 })
 
 # Functions -------------------------------------------------------
 
-source(cnst$global_path)
+source(cnst$path_global)
 
 # Register cluster ------------------------------------------------
 
 # register cluster for parallel processing
-cl <- makeCluster(cnst$n_cores, outfile = cnst$log_path)
+cl <- makeCluster(cnst$n_cores, outfile = cnst$path_pclm_log)
 registerDoParallel(cl)
 
 # Load data -------------------------------------------------------
 
-# stmf death counts
-dat$stmf_raw <-
-  map(cnst$stmf_files, ~{
-    # extract stmf region code from filename
-    region_code_stmf <-
-      sub(pattern = 'stmf.+$', replacement = '', x = .x)
-    read_csv(
-      glue('{cnst$stmf_path}/{.x}'),
-      col_names = c('PopCode', 'Area', 'Year', 'Week', 'Sex', 'Age',
-                    'AgeInterval', 'Deaths', 'Type', 'Access'),
-      col_types = 'ciiccccdcc',
-      skip = 1,
-      na = '.'
-    )
-  })
-
 # skeleton
-dat$skeleton <- readRDS(cnst$skeleton_path)
+dat$skeleton <- readRDS(cnst$path_skeleton)
+# stmf death counts
+dat$stmf <- readRDS(cnst$path_stmf)
 
 # Harmonize labels ------------------------------------------------
 
 dat$stmf_cleaned <-
-  dat$stmf_raw %>%
-  bind_rows() %>%
+  dat$stmf %>%
   # harmonize variable names
   select(
     region_code_stmf = PopCode,
     iso_year = Year, iso_week = Week,
     sex = Sex, age_start = Age, age_width = AgeInterval,
-    death = Deaths
+    death = Deaths,
+    source_death
   ) %>%
   filter(
     # ignore total sex category
@@ -110,8 +95,8 @@ dat$stmf_cleaned <-
   mutate(
     # harmonize sex to common format
     sex = as.character(factor(
-      sex, levels = names(cnst$sex_code_stmf),
-      labels = cnst$sex_code_stmf)
+      sex, levels = names(cnst$co),
+      labels = cnst$code_sex_stmf)
     ),
     # add iso region codes
     region_iso = as.character(factor(
@@ -135,12 +120,12 @@ dat$stmf_cleaned <-
 
 # prepare data for harmonization of age groups
 # executed in parallel over regions
-stmf_isplit_by_region <-
+dat$stmf_isplit_by_region <-
   isplit(dat$stmf_cleaned, f = dat$stmf_cleaned$region_iso)
 
 dat$stmf_single_ages <-
   foreach(
-    single_region = stmf_isplit_by_region,  
+    single_region = dat$stmf_isplit_by_region,  
     .packages = c('dplyr', 'tidyr', 'ungroup'),
     .export = c('cnst')
   ) %dopar% {suppressPackageStartupMessages({
@@ -161,8 +146,8 @@ dat$stmf_single_ages <-
         if (!anyna) {
           
           fit_pclm <- pclm(
-            x = .x$age_start, y = .x$death, nlast = nlast, out.step = 1#,
-            #control = list(lambda = 0.1)
+            x = .x$age_start, y = .x$death, nlast = nlast, out.step = 1,
+            control = list(lambda = 0.1)
           )
           single_age_death <- round(fitted.values(fit_pclm), 1)
           pclm_lambda <- fit_pclm$smoothPar[1]
@@ -180,7 +165,8 @@ dat$stmf_single_ages <-
         )
         
         return(ungrouped_deaths)
-      })
+      }) %>%
+      ungroup()
     
     return(single_region_ungrouped_deaths)
     
@@ -254,11 +240,15 @@ dat$death_pre <-
         is.na(n_missing_weeks), true_max_week, n_missing_weeks)
   )
 
+death <-
+  dat$death_pre %>%
+  select(id, death, n_missing_weeks, n_agegroups_raw)
+
 # Diagnostic plot -------------------------------------------------
 
 # diagnostic plots for week-by-week ungrouping
 walk(unique(dat$stmf_single_ages$region_iso), ~{
-  the_plot <-
+  fig[[glue('fig_pclm_death_ungroup_{.x}')]] <<-
     dat$stmf_single_ages %>%
     filter(region_iso == .x) %>%
     ggplot(aes(x = age, y = death, color = sex)) +
@@ -269,12 +259,6 @@ walk(unique(dat$stmf_single_ages$region_iso), ~{
     scale_color_manual(values = fig_spec$sex_colors) +
     labs(subtitle = .x) +
     fig_spec$MyGGplotTheme()
-  fig_spec$ExportFigure(
-    the_plot,
-    path = glue('{cnst$pclm_path}'),
-    filename = glue('{.x}_pclm'),
-    scale = 2
-  )
 })
 
 # diagnostic plots for year to year age distribution of deaths
@@ -300,7 +284,7 @@ dat$deathplot_dataquality_2020 <-
     n_agegroups_raw = max(n_agegroups_raw)
   )
 
-plot_harmonized_deaths <-
+fig$fig_harmonized_deaths <-
   dat$deathplot_without_last_age %>%
   ggplot() +
   geom_line(
@@ -324,17 +308,13 @@ plot_harmonized_deaths <-
     x = '',
     y = ''
   )
-fig_spec$ExportFigure(
-  plot_harmonized_deaths,
-  path = glue('{cnst$pclm_path}'),
-  filename = glue('plot_harmonized_deaths'),
-  scale = 2
-)
-
-death <-
-  dat$death_pre %>%
-  select(id, death, n_missing_weeks, n_agegroups_raw)
 
 # Export ----------------------------------------------------------
 
-saveRDS(death, file = glue('{cnst$out_path_harmonized}/death.rds'))
+fig_spec$ExportFiguresFromList(
+  lst = fig,
+  path = glue('{cnst$path_pclm}'),
+  scale = 2
+)
+
+saveRDS(death, file = cnst$path_harmonized)

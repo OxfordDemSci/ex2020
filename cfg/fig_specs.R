@@ -171,3 +171,17 @@ fig_spec$ExportFigure <-
     
     do.call(ggsave, arguments)
   }
+
+#' Export ggplots Stored in List
+#' 
+#' @author Jonas Schöley
+fig_spec$ExportFiguresFromList <- function(lst, path, ...) {
+  figure_names <- tolower(gsub('\\.+', '_', make.names(names(lst))))
+  Fun <- function (figure, filename, ...) {
+    fig_spec$ExportFigure(figure = figure, filename = filename, ...)
+  }
+  purrr::pwalk(
+    list(lst, figure_names),
+    Fun, path = path, ...
+  )
+}
