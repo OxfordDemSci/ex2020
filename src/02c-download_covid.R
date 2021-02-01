@@ -52,8 +52,7 @@ dat$coverage <-
   read_csv(
     col_types = 'ccccciiddd',
     skip = 3
-  ) %>%
-  mutate(source_covid = 'coverage')
+  )
 
 # subset to data of interest
 dat$coverage_sub <-

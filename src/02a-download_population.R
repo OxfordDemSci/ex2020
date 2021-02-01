@@ -62,7 +62,7 @@ dat$wpp_df <-
   }) %>%
   # the population projections start one year after the estimates end
   # and both data source have the same format, so we can safely bind them
-  bind_rows(.id = 'source_population')
+  bind_rows(.id = 'population_source')
 
 # Export ----------------------------------------------------------
 

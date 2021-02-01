@@ -8,9 +8,9 @@
 # https://github.com/mpascariu/ungroup).
 #
 # The ungrouping is separately applied to each
-# region x sex x year x week combination in the input data.
+# region x sex x year x agepattern combination in the input data.
 #
-# The ungrouped weekly deaths are then aggregated into yearly death
+# The ungrouped deaths are then aggregated into yearly death
 # counts by age.
 
 # Init ------------------------------------------------------------
@@ -48,6 +48,14 @@ cnst <- within(cnst, {
   # where to put the harmonized data
   path_harmonized = glue('{wd}/tmp/harmonized_death.rds')
   
+  # lookup table for region codes
+  # only countries defined in skeleton
+  region_lookup = 
+    region_meta %>%
+    filter(region_code_iso3166_2 %in% config$skeleton$region) %>%
+    select(region_code_iso3166_2, region_code_stmf) %>%
+    drop_na()
+  
   code_sex_stmf =
     c(m = config$skeleton$sex$Male, f = config$skeleton$sex$Female)
   # pclm life-table closeout age
@@ -82,15 +90,17 @@ dat$stmf_cleaned <-
     region_code_stmf = PopCode,
     iso_year = Year, iso_week = Week,
     sex = Sex, age_start = Age, age_width = AgeInterval,
-    death = Deaths,
-    source_death
+    death = Deaths
   ) %>%
+  # subset to data of interest
   filter(
     # ignore total sex category
     sex != 'b',
     # ignore total age category
     # ignore deaths with unknown age for now
-    !(age_start %in% c('TOT', 'UNK'))
+    !(age_start %in% c('TOT', 'UNK')),
+    iso_year %in% seq(config$skeleton$year$min, config$skeleton$year$max, 1),
+    region_code_stmf %in% cnst$region_lookup$region_code_stmf
   ) %>%
   mutate(
     # harmonize sex to common format
@@ -116,12 +126,93 @@ dat$stmf_cleaned <-
 
 # Harmonize age groupings -----------------------------------------
 
+# we use the following suffix naming convention to make explicit the
+# level of grouping that a variable refers to
+# r: region, s: sex, y: year, w: week
+
+# we need to track the data quality within each region-sex-year
+# stratum, especially the number of weeks with explicitly or
+# implicitly missing data, even if it's just within a single age
+# group. In other words: when we sum deaths over the weeks within a year,
+# we need to know what we're missing from that sum.
+dat$stmf_quality <-
+  dat$stmf_cleaned %>%
+  arrange(region_iso, sex, iso_year, iso_week, age_start) %>%
+  # for each week (w) within a region-sex-year (rsy) stratum determine
+  # - occurrence of any missing values in death count column, i.e.
+  # missing deaths within any age groups
+  # - number of age groups
+  group_by(region_iso, sex, iso_year, iso_week) %>%
+  summarise(
+    # explicit missing deaths in any age
+    any_explicit_missing_deaths_rsyw =
+      any(is.na(death)),
+    # implicitly missing age groups whenever age_start + age_width
+    # don't align with the following age_start
+    any_implicit_missing_deaths_rsyw =
+      any(head(age_start + age_width, -1) != age_start[-1]),
+    any_missing_deaths_rsyw =
+      any_explicit_missing_deaths_rsyw | any_implicit_missing_deaths_rsyw,
+    # number of age groups
+    nageraw_rsyw = n()
+  ) %>%
+  # for each year within a region-sex stratum determine
+  # - number of weeks with complete death counts
+  # - number of weeks with missing death counts
+  # - minimum number of age groups
+  # - q90 number of age groups
+  group_by(region_iso, sex, iso_year) %>%
+  summarise(
+    nweeks_year = ifelse(YearHasIsoWeek53(iso_year)[1], 53, 52),
+    nweeks_complete_deaths = sum(!any_missing_deaths_rsyw),
+    nweeks_missing_deaths = nweeks_year - nweeks_complete_deaths,
+    minnageraw = min(nageraw_rsyw),
+    q90nageraw = quantile(nageraw_rsyw, probs = 0.9)
+  ) %>%
+  ungroup() %>%
+  select(
+    region_iso, sex, year = iso_year,
+    death_total_nweeksmiss = nweeks_missing_deaths,
+    death_total_minnageraw = minnageraw,
+    death_total_q90nageraw = q90nageraw
+  )
+
+# now we have a good idea what is missing within each year so we can
+# just sum death counts over weeks using sum(na.rm=TRUE) without
+# needing to worry about keeping track of missing deaths. here's what's
+# happening next:
+
+# (1) within each region-sex-year-week stratum, check what kind of
+# age grouping pattern is used and give it a unique label
+# (2) within each region-sex-year stratum, disregard the weeks and
+# just iterate over the unique age grouping patterns, creating
+# age-specific yearly death counts by unique age grouping pattern
+# (3) ungroup deaths to single year age groups within each
+# region-sex-year-agegroup_pattern stratum
+
+# label unique age grouping patterns within a
+# region-sex-year-week stratum
+dat$stmf_ready_for_ungroup <-
+  dat$stmf_cleaned %>%
+  group_by(region_iso, sex, iso_year, iso_week) %>%
+  mutate(
+    agegroup_pattern = paste0(age_start, collapse = '-')
+  ) %>%
+  # now aggregate over weeks by age within each
+  # region-sex-year-age_pattern stratum
+  group_by(region_iso, sex, iso_year, agegroup_pattern,
+           age_start, age_width) %>%
+  summarise(
+    death = sum(death, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
 # This may take hours to run...
 
 # prepare data for harmonization of age groups
 # executed in parallel over regions
 dat$stmf_isplit_by_region <-
-  isplit(dat$stmf_cleaned, f = dat$stmf_cleaned$region_iso)
+  isplit(dat$stmf_ready_for_ungroup, f = dat$stmf_ready_for_ungroup$region_iso)
 
 dat$stmf_single_ages <-
   foreach(
@@ -132,9 +223,9 @@ dat$stmf_single_ages <-
     
     single_region_ungrouped_deaths <-
       single_region[['value']] %>%
-      group_by(region_iso, sex, iso_year, iso_week) %>%
+      group_by(region_iso, sex, iso_year, agegroup_pattern) %>%
       group_modify(~{
-        cat('PCLM on', .y$region_iso, .y$sex, .y$iso_year, .y$iso_week, '\n')
+        cat('PCLM on', .y$region_iso, .y$sex, .y$iso_year, .y$agegroup_pattern, '\n')
         
         # number of age groups
         n_agegroups_raw <- length(.x$death)
@@ -146,8 +237,7 @@ dat$stmf_single_ages <-
         if (!anyna) {
           
           fit_pclm <- pclm(
-            x = .x$age_start, y = .x$death, nlast = nlast, out.step = 1,
-            control = list(lambda = 0.1)
+            x = .x$age_start, y = .x$death, nlast = nlast, out.step = 1
           )
           single_age_death <- round(fitted.values(fit_pclm), 1)
           pclm_lambda <- fit_pclm$smoothPar[1]
@@ -160,8 +250,7 @@ dat$stmf_single_ages <-
         ungrouped_deaths <- tibble(
           age = 0:cnst$pclm_highest_age,
           death = single_age_death,
-          lambda = pclm_lambda,
-          n_agegroups_raw = n_agegroups_raw
+          lambda = pclm_lambda
         )
         
         return(ungrouped_deaths)
@@ -176,27 +265,14 @@ stopCluster(cl)
 
 dat$stmf_single_ages <- bind_rows(dat$stmf_single_ages)
 
-# Aggregate weeks into years --------------------------------------
+# Aggregate into years --------------------------------------------
+
+# aggregate over unique age groupings within a year into years
 
 dat$stmf_single_ages_years <-
   dat$stmf_single_ages %>%
   group_by(region_iso, sex, iso_year, age) %>%
   summarise(
-    # within a region, sex, year, and age
-    # data quality indicators
-    # proper number of weeks in that year
-    true_max_week = ifelse(YearHasIsoWeek53(iso_year[1]), 53, 52),
-    # number of weeks with observed death counts
-    n_observed_weeks = sum(!is.na(death)),
-    # number of missing weeks
-    # value of "-1" means that 53 weeks are given in the data
-    # although the year does not feature a leap week, e.g.
-    # strange week coding in original data
-    n_missing_weeks =
-      true_max_week - n_observed_weeks,
-    # number of original age groups before ungrouping
-    n_agegroups_raw =
-      min(n_agegroups_raw),
     # aggregate deaths over weeks into years
     death = sum(death, na.rm = TRUE)
   ) %>%
@@ -209,51 +285,61 @@ dat$stmf_ready_for_join <-
   mutate(age = ifelse(age >= 100, 100, age)) %>%
   group_by(region_iso, sex, iso_year, age) %>%
   summarise(
-    death = sum(death),
-    n_missing_weeks = n_missing_weeks[1],
-    n_agegroups_raw = n_agegroups_raw[1]
+    death = sum(death)
   ) %>%
   ungroup() %>%
   # add id
   mutate(
     id = GenerateRowID(region_iso, sex, age, iso_year)
   ) %>%
-  select(id, death, n_missing_weeks, n_agegroups_raw)
+  select(id, death_total = death)
 
 # Join ------------------------------------------------------------
 
 # join death counts with data base skeleton
 dat$death_pre <-
   dat$skeleton %>%
+  # add info on weeks with missing data to skeleton
+  left_join(
+    dat$stmf_quality,
+    by = c('region_iso', 'sex', 'year')
+  ) %>%
+  # if <death_total_nweeksmiss> is NA than this year only appears
+  # in the skeleton file and not in the data, so the missing
+  # weeks will be the total number of weeks in that year
+  mutate(
+    nweeks_year = ifelse(YearHasIsoWeek53(year), 53, 52),
+    death_total_nweeksmiss =
+      ifelse(
+        is.na(death_total_nweeksmiss),
+        nweeks_year, death_total_nweeksmiss
+      )
+  ) %>%
+  # add ungrouped death counts
   left_join(
     dat$stmf_ready_for_join,
     by = 'id'
-  ) %>%
-  # reconstruct the data quality indicators
-  mutate(
-    true_max_week = ifelse(YearHasIsoWeek53(year), 53, 52),
-    n_missing_weeks =
-      ifelse(
-        # if <n_missing_weeks> is NA than this year only appears
-        # in the skeleton file and not in the data, so the missing
-        # weeks will be the total number of weeks in that year
-        is.na(n_missing_weeks), true_max_week, n_missing_weeks)
   )
 
-death <-
+dat$death <-
   dat$death_pre %>%
-  select(id, death, n_missing_weeks, n_agegroups_raw)
+  select(
+    id, death_total,
+    death_total_nweeksmiss,
+    death_total_minnageraw,
+    death_total_q90nageraw
+  )
 
 # Diagnostic plot -------------------------------------------------
 
 # diagnostic plots for week-by-week ungrouping
 walk(unique(dat$stmf_single_ages$region_iso), ~{
-  fig[[glue('fig_pclm_death_ungroup_{.x}')]] <<-
+  fig[[glue('death_pclm_{.x}')]] <<-
     dat$stmf_single_ages %>%
     filter(region_iso == .x) %>%
     ggplot(aes(x = age, y = death, color = sex)) +
     geom_line() +
-    facet_grid(iso_year ~ iso_week) +
+    facet_grid(iso_year ~ agegroup_pattern) +
     theme_minimal() +
     scale_x_continuous(breaks = NULL) +
     scale_color_manual(values = fig_spec$sex_colors) +
@@ -275,27 +361,14 @@ dat$deathplot_last_age <-
   dat$deathplot %>%
   filter(age_start == 100)
 
-dat$deathplot_dataquality_2020 <-
-  dat$deathplot %>%
-  filter(year == 2020) %>%
-  group_by(region_iso) %>%
-  summarise(
-    n_missing_weeks = max(n_missing_weeks),
-    n_agegroups_raw = max(n_agegroups_raw)
-  )
-
-fig$fig_harmonized_deaths <-
+fig$death_pclm <-
   dat$deathplot_without_last_age %>%
   ggplot() +
   geom_line(
     aes(
-      x = age_start, y = death, color = is2020,
+      x = age_start, y = death_total, color = is2020,
       group = interaction(year), size = is2020
     )
-  ) +
-  geom_label(
-    aes(x = 0, y = 0, label = paste0(n_missing_weeks, '-', n_agegroups_raw)),
-    hjust = 0, data = dat$deathplot_dataquality_2020, label.size = 0, alpha = 0.8
   ) +
   scale_size_manual(values = c(0.1, 1)) +
   scale_color_manual(values = c(`FALSE` = 'grey', `TRUE` = 'red')) +
@@ -304,9 +377,39 @@ fig$fig_harmonized_deaths <-
   fig_spec$MyGGplotTheme() +
   labs(
     title = 'Ungrouped male death counts by age and country',
-    subtitle = 'Year 2020 is red, prior years grey. Numeric code <number of weeks missing from 2020 reported deaths>-<minimum number of raw age groups for 2020 ungrouping>',
+    subtitle = 'Year 2020 is red, prior years grey',
     x = '',
     y = ''
+  )
+
+fig$death_quality_q90nageraw <-
+  dat$stmf_quality %>%
+  ggplot(aes(x = year, y = death_total_q90nageraw, fill = sex, group = sex)) +
+  geom_col(position = 'dodge') +
+  facet_wrap(~region_iso) +
+  scale_fill_manual(values = fig_spec$sex_colors) +
+  fig_spec$MyGGplotTheme(panel_border = TRUE, grid = 'xy') +
+  labs(
+    title = '90% of the weeks in a year feature at least this many age groups',
+    x = 'Year', y = 'Count'
+  )
+  
+fig$death_quality_nweeksmiss <-
+  dat$death_pre %>%
+  filter(age_start == 80) %>%
+  ggplot(
+    aes(x = year, y = death_total_nweeksmiss,
+        fill = sex, group = sex)
+  ) +
+  geom_col(position = 'dodge') +
+  facet_wrap(~region_iso) +
+  scale_x_continuous(breaks = 2015:2020) +
+  scale_y_continuous(limits = c(0, 53)) +
+  fig_spec$MyGGplotTheme(panel_border = TRUE, grid = 'xy') +
+  labs(
+    title = 'Number of weeks with at least one missing age-specific death count',
+    subtitle = 'Implicitly missing weeks and ages are counted as well',
+    x = 'Year', y = 'Count'
   )
 
 # Export ----------------------------------------------------------
@@ -317,4 +420,4 @@ fig_spec$ExportFiguresFromList(
   scale = 2
 )
 
-saveRDS(death, file = cnst$path_harmonized)
+saveRDS(dat$death, file = cnst$path_harmonized)

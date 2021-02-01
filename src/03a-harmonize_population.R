@@ -65,7 +65,7 @@ dat$wpp_clean <-
   dat$wpp %>%
   # select columns of interest
   select(
-    source_population,
+    population_source,
     region_code_wpp = LocID,
     iso_year = Time, age = AgeGrpStart,
     male = PopMale, female = PopFemale
@@ -94,7 +94,7 @@ dat$wpp_clean <-
   ) %>%
   # add row id
   mutate(id = GenerateRowID(region_iso, sex, age, iso_year)) %>%
-  select(id, population_midyear, source_population)
+  select(id, population_midyear, population_source)
 
 # Join with skeleton ----------------------------------------------
 
@@ -106,7 +106,7 @@ dat$joined <-
     dat$wpp_clean,
     by = 'id'
   ) %>%
-  select(id, population_midyear, source_population)
+  select(id, population_midyear, population_source)
 
 # Export ----------------------------------------------------------
 

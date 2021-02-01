@@ -1,6 +1,6 @@
 skeleton:
   year:
-    min: 2000
+    min: 2015
     max: 2020
   age:
     min: 0

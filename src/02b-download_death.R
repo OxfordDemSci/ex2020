@@ -53,8 +53,7 @@ dat$stmf <-
         na = '.'
       )
   }) %>%
-  bind_rows() %>%
-  mutate(source_death = 'stmf')
+  bind_rows()
 
 # Export ----------------------------------------------------------
 
