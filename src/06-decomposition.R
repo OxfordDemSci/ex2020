@@ -2,19 +2,79 @@
 # Init ------------------------------------------------------------
 
 library(here); library(glue)
+library(tidyverse)
 library(data.table)
 library(DemoDecomp)
 library(reshape2)
 library(doParallel)
 
-# Get life tables  -------------------------------------------------
+
+# Constants -------------------------------------------------------
+
 wd <- here()
+cnst <- list()
+cnst <- within(cnst, {
+  regions_for_analysis = c(
+    'AT', 'BE', 'BG', 'CH', 'CL', 'CZ', 'DE', 'DK', 'ES', 'FI', 'FR',
+    'GB-EAW', 'GB-NIR', 'GB-SCT',
+    'HU', 'IL', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI','US'
+  )
+  regions_for_cause_of_death_analysis =c(
+    'BE', 'CH', 'CL', 'CZ', 'DE', 'DK', 'ES', 'FR', 'GB-EAW', 'GB-SCT',
+     'NL', 'PT', 'SI', 'US'
+  )
+  path_out = glue('{wd}/out')
+})
 
-source(glue('{wd}/src/05-calculate_lt.R'))
-
-# Years we include in analysis  ------------------------------------
 cnst$initial.year <- 2015
 cnst$final.year <- 2020
+
+dat <- list()
+fig <- list()
+
+# Data ------------------------------------------------------------
+source(glue('{wd}/cfg/fig_specs.R'))
+
+dat$lt_input <- readRDS(glue('{cnst$path_out}/lt_input.rds'))
+
+dat$lt_input_sub <-
+  dat$lt_input %>%
+  filter(region_iso %in% cnst$regions_for_analysis)
+
+#create dataset needed for decomposition, I'm using data.table here but you can edit
+dat$mx_input_decomp <- data.table(dat$lt_input_sub)
+#add all.cause mx
+dat$mx_input_decom[,mx := death_total/population_midyear]
+#add covid19 mx
+dat$mx_input_decom[,mx.covid := ifelse(year %in% 2020, 
+                                       mx*(death_covid/death_total),0)]
+#check  dat$mx_input_decom[is.na(mx.covid)]
+dat$mx_input_decom[,mx.non.covid := ifelse(year %in% 2020, 
+                                           mx - mx.covid,mx)]
+
+# Function --------------------------------------------------------
+
+# simple piecewise-exponential life-table
+CalculateLifeTable <- 
+  function (df, x, nx, Dx, Ex) {
+    
+    require(dplyr)
+    
+    df %>%
+      transmute(
+        x = {{x}},
+        nx = {{nx}},
+        mx = {{Dx}}/{{Ex}},
+        px = exp(-mx*{{nx}}),
+        qx = 1-px,
+        lx = head(cumprod(c(1, px)), -1),
+        dx = c(-diff(lx), tail(lx, 1)),
+        Lx = dx/mx,
+        Tx = rev(cumsum(rev(Lx))),
+        ex = Tx/lx
+      )  
+    
+  }
 
 # Functions used in the decomp   -----------------------------------
 
@@ -44,21 +104,33 @@ life.expectancy.cod.fun <-
     life.expectancy.fun(mx,x,nx)
   }
 
+
+#DT <- dat$mx_input_decomp[region_iso %in% 'AT' & sex == 'Female']
+#y <- 2016
 # create a function to decompose by age every yearly change
-Decomp_fun <- function(DT = .SD ){
-  x          <- sort(unique(DT$x))
+Decomp_fun <- 
+  function(DT = .SD, covid.included = 1){
+  x          <- sort(unique(DT$age_start))
   years      <- sort(unique(DT$year))
-  nx         <- DT$nx[1:length(x)]
+  nx         <- DT$age_width[1:length(x)]
+  
   
   decomp <- mclapply(years[-1],function(y,x =x, nx = nx , m = m, N = N){
-    mx2  <- m[m$year == y,]$mx
-    mx1  <- m[m$year == y-1,]$mx
+    
+    if(covid.included == 1){
+    mx2  <- c(m[m$year == y,]$mx.covid,m[m$year == y,]$mx.non.covid)
+    mx1  <- c(m[m$year == y-1,]$mx.covid,m[m$year == y-1,]$mx.non.covid)}
+    
+    if(covid.included != 1){
+      mx2  <- m[m$year == y,]$mx
+      mx1  <- m[m$year == y - 1,]$mx}
     
     hor  <- horiuchi(func = life.expectancy.cod.fun,pars1 = mx1,pars2 = mx2,N = N,x =x, nx = nx)
     
-    dim(hor) <- c(length(x), length(unique(DT$Cause)))
+    dim(hor) <- c(length(x), length(hor)/length(x))
     
-    colnames(hor) <- unique(DT$Cause)
+    colnames(hor) <- if(covid.included != 1){'All.cause'}
+    
     rownames(hor) <- x
     
     hor <- data.table(melt(hor))
@@ -74,17 +146,32 @@ Decomp_fun <- function(DT = .SD ){
   
 }
 
-# Subset life tables for only those to be decomposed------------------
+# Life table calculations -----------------------------------------
 
-#select data 
-dat$lt_to_decompose <- data.table(dat$lt %>% filter(year %in% cnst$initial.year:cnst$final.year))
+# life-tables by year
+dat$lt <-
+  dat$lt_input_sub %>%
+  arrange(region_iso, sex, year, age_start) %>%
+  group_by(region_iso, sex, year) %>%
+  group_modify(~{
+    CalculateLifeTable(.x, age_start, age_width, death_total, population_midyear)
+  }) %>%
+  ungroup()
 
-##This will have 2 causes of death once we include COVID-19 specific mx vs the rest mx
-dat$lt_to_decompose$Cause <- 1
+# Decomposition calculations -----------------------------------------
 
-#calculate decomp by country and sex
-dat$decomposition_results <- dat$lt_to_decompose[, Decomp_fun(DT = .SD), by = .(region_iso,sex)]
+#decomp by age
+dat$decomposition_results_by_age <- dat$mx_input_decomp[, Decomp_fun(DT = .SD,covid.included = 0), by = .(region_iso,sex)]
 
-dat$decomposition_results$year.initial <-  dat$decomposition_results$year.final-1
 
-saveRDS(dat$decomposition_results, file = glue('{wd}/out/decomposition_results.rds'))
+#decomp by age and cause, fewer countries
+dat$decomposition_results_by_age_cause <- dat$mx_input_decomp[region_iso %in% cnst$regions_for_cause_of_death_analysis,
+                                                        Decomp_fun(DT = .SD,covid.included = 1), by = .(region_iso,sex)]
+
+#add some variables and save
+dat$decomposition_results_by_age_cause$cause <- factor(dat$decomposition_results_by_age_cause$cause,labels = c('covid','non.covid'))
+dat$decomposition_results_by_age$year.initial <-  dat$decomposition_results_by_age$year.final-1
+dat$decomposition_results_by_age_cause$year.initial <-  dat$decomposition_results_by_age_cause$year.final-1
+
+
+saveRDS(dat, file = glue('{wd}/out/decomposition_results.rds'))

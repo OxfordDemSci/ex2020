@@ -14,7 +14,7 @@ cnst <- within(cnst, {
   regions_for_analysis = c(
     'AT', 'BE', 'BG', 'CH', 'CL', 'CZ', 'DE', 'DK', 'ES', 'FI', 'FR',
     'GB-EAW', 'GB-NIR', 'GB-SCT',
-    'HU', 'IL', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI'
+    'HU', 'IL', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI','US'
   )
   path_out = glue('{wd}/out')
 })
