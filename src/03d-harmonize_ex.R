@@ -4,7 +4,7 @@
 
 library(here); library(glue)
 library(yaml)
-library(readr); library(dplyr); library(tidyr); library(purrr)
+library(readr); library(dplyr); library(tidyr)
 
 # Constants -------------------------------------------------------
 
@@ -46,7 +46,6 @@ dat <- list()
 
 dat$skeleton <- readRDS(cnst$path_skeleton)
 
-dat$ex <- list()
 dat$ex <- readRDS(glue('{cnst$path_wpp}/wpp_ex.rds'))
 
 # Harmonize -------------------------------------------------------
@@ -73,7 +72,7 @@ dat$ex_clean <-
   ) %>%
   # add row id
   mutate(id = GenerateRowID(region_iso, sex, age_start, iso_year)) %>%
-  select(id, age_width, ex)
+  select(id, ex)
 
 # Join with skeleton ----------------------------------------------
 
@@ -84,14 +83,11 @@ dat$ex_clean <-
 # with the skeleton
 dat$joined <-
   dat$skeleton %>% 
-  select(!age_width) %>%
   left_join(
     dat$ex_clean,
     by = 'id'
   ) %>%
-  select(id, age_width, ex)
-# keep the age_width column 
-# because the ex data is not disaggregated by sing-year age group
+  select(id, ex_wpp_estimate = ex)
 
 # Export ----------------------------------------------------------
 

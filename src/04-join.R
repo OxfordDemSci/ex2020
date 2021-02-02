@@ -20,6 +20,8 @@ cnst <- within(cnst, {
   path_death = glue('{wd}/tmp/harmonized_death.rds')
   # covid path
   path_covid = glue('{wd}/tmp/harmonized_covid.rds')
+  # ex estimate path
+  path_ex = glue('{wd}/tmp/harmonized_ex.rds')
   # out path of harmonized data
   path_out = glue('{wd}/out')
 })
@@ -32,6 +34,7 @@ dat$skeleton <- readRDS(cnst$path_skeleton)
 dat$population <- readRDS(cnst$path_population)
 dat$death <- readRDS(cnst$path_death)
 dat$covid <- readRDS(cnst$path_covid)
+dat$ex <- readRDS(cnst$path_ex)
 
 # Join ------------------------------------------------------------
 
@@ -41,7 +44,8 @@ dat$lt_input <-
   arrange(region_iso, sex, year, age_start) %>%
   left_join(dat$death, by = 'id') %>%
   left_join(dat$population, by = 'id') %>%
-  left_join(dat$covid, by = 'id')
+  left_join(dat$covid, by = 'id') %>%
+  left_join(dat$ex, by = 'id')
 
 # Export ----------------------------------------------------------
 

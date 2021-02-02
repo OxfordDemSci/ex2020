@@ -14,9 +14,10 @@ cnst <- within(cnst, {
   regions_for_analysis = c(
     'AT', 'BE', 'BG', 'CH', 'CL', 'CZ', 'DE', 'DK', 'ES', 'FI', 'FR',
     'GB-EAW', 'GB-NIR', 'GB-SCT',
-    'HU', 'IL', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI','US'
+    'HU', 'IL', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI'
   )
   path_out = glue('{wd}/out')
+  path_tmp = glue('{wd}/tmp')
 })
 
 dat <- list()
@@ -159,3 +160,33 @@ fig$ex_annual_change <-
   )
 fig$ex_annual_change
 fig_spec$ExportFigure(fig$ex_annual_change, path = cnst$path_out)
+
+# Compare our e0 estimates with wpp estimates ---------------------
+
+walk(c(0, 60, 80), ~{
+  fig[[glue('ex_compare_age{.x}')]] <<-
+    dat$lt %>%
+    filter(x == .x) %>%
+    ggplot(aes(x = year, y = ex, color = sex)) +
+    geom_point() +
+    geom_segment(
+      aes(x = 2015, xend = 2019, y = ex_wpp_estimate, yend = ex_wpp_estimate),
+      data =
+        dat$lt_input_sub %>%
+        filter(age_start == .x, year == 2018)
+    ) +
+    facet_wrap(~region_iso, scales = 'free_y') +
+    scale_x_continuous(
+      breaks = 2015:2020,
+      labels = c('', '2016', '', '2018', '', '2020')
+    ) +
+    scale_color_manual(values = fig_spec$sex_colors) +
+    fig_spec$MyGGplotTheme(panel_border = TRUE, grid = 'xy', scaler = 0.8) +
+    labs(
+      title = glue('Estimated yearly life expectancy at age {.x} compared with WPP 5 year average estimates'),
+      y = glue('e{.x}')
+    )
+})
+
+fig_spec$ExportFigure(fig$ex_compare_age0, path = cnst$path_tmp)
+fig_spec$ExportFigure(fig$ex_compare_age80, path = cnst$path_tmp)
