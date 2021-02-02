@@ -8,7 +8,6 @@ library(DemoDecomp)
 library(reshape2)
 library(doParallel)
 
-
 # Constants -------------------------------------------------------
 
 wd <- here()
@@ -52,31 +51,7 @@ dat$mx_input_decom[,mx.covid := ifelse(year %in% 2020,
 dat$mx_input_decom[,mx.non.covid := ifelse(year %in% 2020, 
                                            mx - mx.covid,mx)]
 
-# Function --------------------------------------------------------
-
-# simple piecewise-exponential life-table
-CalculateLifeTable <- 
-  function (df, x, nx, Dx, Ex) {
-    
-    require(dplyr)
-    
-    df %>%
-      transmute(
-        x = {{x}},
-        nx = {{nx}},
-        mx = {{Dx}}/{{Ex}},
-        px = exp(-mx*{{nx}}),
-        qx = 1-px,
-        lx = head(cumprod(c(1, px)), -1),
-        dx = c(-diff(lx), tail(lx, 1)),
-        Lx = dx/mx,
-        Tx = rev(cumsum(rev(Lx))),
-        ex = Tx/lx
-      )  
-    
-  }
-
-# Functions used in the decomp   -----------------------------------
+# Functions -------------------------------------------------------
 
 #General Life expectancy function 
 life.expectancy.fun  <- 
@@ -146,18 +121,6 @@ Decomp_fun <-
   
 }
 
-# Life table calculations -----------------------------------------
-
-# life-tables by year
-dat$lt <-
-  dat$lt_input_sub %>%
-  arrange(region_iso, sex, year, age_start) %>%
-  group_by(region_iso, sex, year) %>%
-  group_modify(~{
-    CalculateLifeTable(.x, age_start, age_width, death_total, population_midyear)
-  }) %>%
-  ungroup()
-
 # Decomposition calculations -----------------------------------------
 
 #decomp by age
@@ -172,6 +135,5 @@ dat$decomposition_results_by_age_cause <- dat$mx_input_decomp[region_iso %in% cn
 dat$decomposition_results_by_age_cause$cause <- factor(dat$decomposition_results_by_age_cause$cause,labels = c('covid','non.covid'))
 dat$decomposition_results_by_age$year.initial <-  dat$decomposition_results_by_age$year.final-1
 dat$decomposition_results_by_age_cause$year.initial <-  dat$decomposition_results_by_age_cause$year.final-1
-
 
 saveRDS(dat, file = glue('{wd}/out/decomposition_results.rds'))

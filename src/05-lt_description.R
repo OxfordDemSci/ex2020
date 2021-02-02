@@ -1,4 +1,4 @@
-# Calculate life tables
+# General life-table analysis
 
 # Init ------------------------------------------------------------
 
@@ -57,7 +57,7 @@ CalculateLifeTable <-
     
   }
 
-# Life table calculations -----------------------------------------
+# Calculate annual life tables ------------------------------------
 
 # life-tables by year
 dat$lt <-
@@ -69,73 +69,64 @@ dat$lt <-
   }) %>%
   ungroup()
 
-# average yearly change in ex 2015 to 2019
-dat$lt_annual_change_pre2020 <-
+# Analyse ex and mx changes ---------------------------------------
+
+# average yearly change in mx, ex 2015 to 2019
+dat$lt_avg_annual_change_pre2020 <-
   dat$lt %>%
+  arrange(region_iso, sex, x, year) %>%
   filter(year %in% 2015:2019) %>%
   group_by(region_iso, sex, x) %>%
+  # the na.rm statements here mean that an average is
+  # calculated even if data is missing for some years
+  # in the 2015:2019 period
   summarise(
     # arithmetic mean of ex annual change
-    avg_annual_diff_years = mean(diff(ex), na.rm = TRUE),
-    # geometric mean of ex relative annual growth
-    avg_annual_diff_pct = prod(ex[-1]/head(ex, -1))^(1/(n()-1))
+    ex_avgdiff_pre2020 = mean(diff(ex), na.rm = TRUE),
+    # geometric mean of mx relative annual change
+    mx_avgratio_pre2020 = prod(mx[-1]/head(mx, -1), na.rm = TRUE)^(1/(n()-1))
   ) %>%
   ungroup()
-
-# yearly change in ex 2020 to 2019
+# change in mx, ex 2020 to 2019
 dat$lt_annual_change_2020 <-
   dat$lt %>%
   filter(year %in% c(2019, 2020)) %>%
-  group_by(region_iso, sex, x) %>%
-  summarise(
-    # arithmetic mean of ex annual change
-    avg_annual_diff_years = mean(diff(ex)),
-    # geometric mean of ex relative annual growth
-    avg_annual_diff_pct = prod(ex[-1]/head(ex, -1))^(1/(n()-1))
-  ) %>%
-  ungroup()
-
+  select(region_iso, sex, year, x, mx, ex) %>%
+  pivot_wider(names_from = year, values_from = c(mx, ex)) %>%
+  mutate(
+    ex_diff_2020 = ex_2020 - ex_2019,
+    mx_ratio_2020 = mx_2020 / mx_2019
+  )
+# join average pre 2020 and 2020 changes
 dat$lt_annual_change <- 
   full_join(
-    dat$lt_annual_change_pre2020,
+    dat$lt_avg_annual_change_pre2020,
     dat$lt_annual_change_2020,
-    by  = c('region_iso', 'sex', 'x'),
-    suffix = c('pre2020', '2020')
+    by  = c('region_iso', 'sex', 'x')
   )
 
-# differences in ex 2020 - 2019
-dat$lt_20192020 <-
-  dat$lt %>%
-  filter(year %in% c(2019, 2020)) %>%
-  select(region_iso, sex, year, x, lx, Lx, Tx, ex) %>%
-  pivot_wider(names_from = year, values_from = c(ex, lx, Lx, Tx, ex)) %>%
-  mutate(
-    ex_diff = ex_2020 - ex_2019
-  )
-
-# Changes in remaining life-expectancy ----------------------------
-
+# plot changes in remaining e0, e60, e80
+# from 2019 to 2020 by sex and region and compare with average
+# annual change over 2015 to 2019 period
 walk(c(0, 60, 80), ~{
-  fig[[glue('age{.x}')]] <<-
-    dat$lt_20192020 %>%
+  fig[[glue('e{.x}_change')]] <<-
+    dat$lt_annual_change %>%
     filter(x == .x) %>%
     mutate(
       x = as.factor(x),
-      region_iso = fct_reorder(region_iso, -ex_diff)
+      region_iso = fct_reorder(region_iso, -ex_diff_2020)
     ) %>%
     ggplot(aes(x = region_iso, color = sex, fill = sex, group = sex)) +
     geom_col(
-      aes(y = ex_diff),
+      aes(y = ex_diff_2020),
       position = position_dodge(width = 0.6), width = 0.4
     ) +
     geom_point(
-      aes(x = region_iso, color = sex, y = avg_annual_diff_years),
-      position = position_dodge(width = 0.6), width = 0.4,
-      data = dat$lt_annual_change_pre2020 %>% filter(x == .x)
+      aes(x = region_iso, color = sex, y = ex_avgdiff_pre2020),
+      position = position_dodge(width = 0.6)
     ) +
     geom_hline(yintercept = 0) +
     coord_flip(ylim = c(-2, 1)) +
-    #guides(color = 'none', fill = 'none') +
     scale_color_manual(values = fig_spec$sex_colors) +
     scale_fill_manual(values = fig_spec$sex_colors) +
     guides(
@@ -151,20 +142,45 @@ walk(c(0, 60, 80), ~{
     theme(legend.title = element_blank())
 })
 
-fig$ex_annual_change <-
-  fig$age0 + fig$age60 + fig$age80 +
+fig$ex_change <-
+  fig$e0_change + fig$e60_change + fig$e80_change +
   plot_layout(guides = 'collect') +
   plot_annotation(
     title = 'Annual change in years of remaining life-expectancy 2019 to 2020',
     subtitle = 'Points mark the average annual change in life-expectancy 2015 to 2019'
   )
-fig$ex_annual_change
-fig_spec$ExportFigure(fig$ex_annual_change, path = cnst$path_out)
+fig$ex_change
+fig_spec$ExportFigure(fig$ex_change, path = cnst$path_out)
 
-# Compare our e0 estimates with wpp estimates ---------------------
+# compare hazards
+dat$lt_annual_change %>%
+  filter(x < 100) %>%
+  ggplot(aes(x = x, color = sex)) +
+  geom_line(aes(y = mx_2020)) +
+  geom_line(aes(y = mx_2019), linetype = 2) +
+  facet_wrap(~region_iso) +
+  scale_y_log10() +
+  scale_color_manual(values = fig_spec$sex_colors) +
+  fig_spec$MyGGplotTheme(panel_border = TRUE) +
+  labs(x = 'Age', y = 'Deaths per person-year of exposure',
+       title = 'Hazard rates 2020 compared with 2019 (dashed)')
+
+# compare densities
+dat$lt %>%
+  filter(x < 100, x > 70, sex == 'Male') %>%
+  mutate(is2020 = ifelse(year == 2020, TRUE, FALSE)) %>%
+  ggplot(aes(x = x, group = year, color = is2020)) +
+  geom_line(aes(y = dx)) +
+  facet_wrap(~region_iso) +
+  scale_color_manual(values = c(`TRUE` = 'red', `FALSE` = 'grey')) +
+  fig_spec$MyGGplotTheme(panel_border = TRUE) +
+  labs(x = 'Age', y = 'density',
+       title = 'Male densities of death 2020 (red) compared with previous years (grey)')
+
+# Compare our ex estimates with wpp estimates ---------------------
 
 walk(c(0, 60, 80), ~{
-  fig[[glue('ex_compare_age{.x}')]] <<-
+  fig[[glue('e{.x}_consistency_check')]] <<-
     dat$lt %>%
     filter(x == .x) %>%
     ggplot(aes(x = year, y = ex, color = sex)) +
@@ -188,5 +204,5 @@ walk(c(0, 60, 80), ~{
     )
 })
 
-fig_spec$ExportFigure(fig$ex_compare_age0, path = cnst$path_tmp)
-fig_spec$ExportFigure(fig$ex_compare_age80, path = cnst$path_tmp)
+fig_spec$ExportFigure(fig$e0_consistency_check, path = cnst$path_tmp)
+fig_spec$ExportFigure(fig$e80_consistency_check, path = cnst$path_tmp)
