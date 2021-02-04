@@ -12,7 +12,7 @@ wd <- here()
 cnst <- list()
 cnst <- within(cnst, {
   regions_for_analysis = c(
-    'AT', 'BE', 'BG', 'CH', 'CL', 'CZ', 'DE', 'DK', 'ES', 'FI', 'FR',
+    'AT', 'BE', 'BG', 'CH', 'CL', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR',
     'GB-EAW', 'GB-NIR', 'GB-SCT',
     'HU', 'IL', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI'
   )
