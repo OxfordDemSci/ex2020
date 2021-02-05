@@ -3,11 +3,11 @@ AT,AUT,AT,AUT,AUT,iso_week_date,AUT,40,Austria,Austria,0,Austria,n,Europe
 AU,AUS,AU,AUS,AUS2,gregorian,AUS,36,Australia,Australia,0,Australia,s,Oceania
 BE,BEL,BE,BEL,BEL,iso_week_date,BEL,56,Belgium,Belgium,0,Belgium,n,Europe
 BG,BGR,BG,BGR,BGR,iso_week_date,BGR,100,Bulgaria,Bulgaria,0,Bulgaria,n,Europe
-CA,CAN,CA,CAN,CAN,?,CAN,124,Canada,Canada,0,Canada,n,North America
+CA,CAN,CA,CAN,CAN,? mmwr_weeks,CAN,124,Canada,Canada,0,Canada,n,North America
 CH,CHE,CH,CHE,CHE,iso_week_date,CHE,756,Switzerland,Switzerland,0,Switzerland,n,Europe
 CL,CHL,CL,CHL,CHL,iso_week_date,CHL,152,Chile,Chile,0,Chile,s,South America
 CZ,CZE,CZ,CZE,CZE,iso_week_date,CZE,203,Czechia,Czech Republic,0,Czech Republic,n,Europe
-DE,DEU,DE,DEU,DEUTNP,?,DEUTNP,276,Germany,Germany,0,Germany,n,Europe
+DE,DEU,DE,DEU,DEUTNP,iso_week_date,DEUTNP,276,Germany,Germany,0,Germany,n,Europe
 DK,DNK,DK,DNK,DNK,iso_week_date,DNK,208,Denmark,Denmark,0,Denmark,n,Europe
 EE,EST,EE,EST,EST,iso_week_date,EST,233,Estonia,Estonia,0,Estonia,n,Europe
 ES,ESP,ES,ESP,ESP,iso_week_date,ESP,724,Spain,Spain,0,Spain,n,Europe
@@ -16,7 +16,7 @@ FR,FRA,FR,FRA,FRATNP,iso_week_date,FRATNP,250,France,France,0,France,n,Europe
 GB-EAW,GBR-EAW,GB,GBR,GBRTENW,iso_week_date,GBRTENW,.,England and Wales,England and Wales,1,Great Britain,n,Europe
 GB-NIR,GBR-NIR,GB,GBR,GBR_NIR,iso_week_date,GBR_NIR,.,Northern Ireland,Northern Ireland,1,Great Britain,n,Europe
 GB-SCT,GBR-SCT,GB,GBR,GBR_SCO,iso_week_date,GBR_SCO,.,Scotland,Scotland,1,Great Britain,n,Europe
-GR,GRC,GR,GRC,GRC,?,GRC,300,Greece,Greece,0,Greece,n,Europe
+GR,GRC,GR,GRC,GRC,? iso_week_date,GRC,300,Greece,Greece,0,Greece,n,Europe
 HR,HRV,HR,HRV,HRV,iso_week_date,HRV,191,Croatia,Croatia,0,Croatia,n,Europe
 HU,HUN,HU,HUN,HUN,iso_week_date,HUN,348,Hungary,Hungary,0,Hungary,n,Europe
 IL,ISR,IL,ISR,ISR,iso_week_date,ISR,376,Israel,Israel,0,Israel,n,Asia
