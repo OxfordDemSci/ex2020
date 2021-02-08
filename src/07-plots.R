@@ -95,7 +95,7 @@ df_plot %>%
     geom_point()+
     scale_shape_manual(values = c(124, 43, 16))+
     scale_size_manual(values = c(4, 4, 1.5))+
-    scale_color_manual(values = c(2, 4))+
+    scale_color_manual(values = c("#B5223BFF", "#64B6EEFF"))+
     scale_y_discrete(position = "right")+
     scale_x_continuous(position = "top")+
     facet_grid(~age, scales = "free_x")+
@@ -129,8 +129,8 @@ df_plot %>%
     geom_hline(yintercept = seq(2, 22, 2), size = 5, color = "#eaeaea")+
     geom_vline(xintercept = 0, size = 2, color = "#bababa")+
     geom_point(aes(x = ex_diff, color = sex, shape = sex), size = 2)+
-    scale_color_manual(values = c(2, 4))+
-    scale_shape_manual(values = c(16, 1))+
+    scale_color_manual(values = c("#B5223BFF", "#64B6EEFF"))+
+    scale_shape_manual(values = c(1, 16))+
     geom_point(aes(x = ex_diff_1519/4, color = sex), shape = 124, size = 3)+
     scale_y_discrete(position = "right")+
     scale_x_continuous(breaks = seq(-1.5, 2.5, .5), expand = c(0,0))+
