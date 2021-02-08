@@ -70,7 +70,7 @@ dat$lt <-
   ungroup()
 
 # save just the life tables
-df_lt <- dat$ltdat$lt
+df_lt <- dat$lt
 write_rds(df_lt, path = "out/it_output.rds")
 
 # Analyse ex and mx changes ---------------------------------------
