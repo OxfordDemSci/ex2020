@@ -12,6 +12,7 @@
 - `death_total_minnageraw`: the minimum number of age-groups in the raw input data within this region-sex-year stratum
 - `death_total_q90nageraw`: 90% of the weeks in the raw input data within this region-sex-year stratum feature at least this many age groups
 - `population_midyear`: midyear population (July 1st)
+- `population_py`: person-years of exposure (adjusted for leap-weeks)
 - `population_source`: where the data originates
 - `death_covid`: number of deaths due to covid
 - `death_covid_date`: number of deaths due to covid as of <date>
@@ -34,6 +35,16 @@
   - for years 2000 to 2019: World Population Prospects 2019 single year-age population estimates 1950-2019
   - for year 2020: World Population Prospects 2019 single year-age population projections 2020-2100
 - mid-year population
+- mid-year population translated into exposures:
+  - if a region reports annual deaths using the Gregorian calendar
+  definition of a year (365 or 366 days long) set exposures equal
+  to mid year population estimates
+  - if a region reports annual deaths using the iso-week-year
+  definition of a year (364 or 371 days ling), and if there is a
+  leap-week in that year, set exposures equal to
+  371/365*mid_year_population to account for the longer reporting
+  period. in years without leap-weeks set exposures equal
+  to mid year population estimates
 
 ## COVID deaths
 

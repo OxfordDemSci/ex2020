@@ -65,7 +65,7 @@ dat$lt <-
   arrange(region_iso, sex, year, age_start) %>%
   group_by(region_iso, sex, year) %>%
   group_modify(~{
-    CalculateLifeTable(.x, age_start, age_width, death_total, population_midyear)
+    CalculateLifeTable(.x, age_start, age_width, death_total, population_py)
   }) %>%
   ungroup()
 
