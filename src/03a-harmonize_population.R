@@ -1,14 +1,24 @@
 # Harmonize mid-year population counts
 
-# (1) Mid year population estimates for all nation states from
+# (1) Mid-year population estimates for all nation states from
 #     World Population Prospects
-#  - years < 2020 from estimates
-#  - year 2020 from projections
-# (2) Mid year population estimates for England & Wales,
+#     - years < 2020 from estimates
+#     - year 2020 from projections
+# (2) Mid-year population estimates for England & Wales,
 #     Northern Ireland and Scotland from HMD/HFD
-#  - years < 2019 from HMD midyear pop estimates
-#  - years 2019,2020 projected based on HMD and HFD population,
-#    mortality and fertility data
+#     - years < 2019 from HMD midyear pop estimates
+#     - years 2019,2020 projected based on HMD and HFD population,
+#      mortality and fertility data
+# (3) Derive person-years of exposure from mid-year population counts
+#     - if a region reports annual deaths using the Gregorian calendar
+#       definition of a year (365 or 366 days long) set exposures equal
+#       to mid year population estimates
+#     - if a region reports annual deaths using the iso-week-year
+#       definition of a year (364 or 371 days ling), and if there is a
+#       leap-week in that year, set exposures equal to
+#       371/365*mid_year_population to account for the longer reporting
+#       period. in years without leap-weeks set exposures equal
+#       to mid year population estimates
 
 # Init ------------------------------------------------------------
 
@@ -204,7 +214,7 @@ fig$wpp_population <-
   labs(title = 'WPP population estimates 2015-18 (grey) and population projections 2019/20 (red)') +
   fig_spec$MyGGplotTheme(scaler = 0.8)
 
-# Harmonize population data for UK regions ------------------------
+# Harmonize pop data for UK regions -------------------------------
 
 # for years not yet in the data we get population estimates via a
 # Leslie-Matrix projection of midyear population assuming a stable
@@ -326,11 +336,11 @@ fig$gb_population <-
   labs(title = 'HMD population estimates 2015-18 (grey) and stable population projection 2019/20 (red) for U.K. regions') +
   fig_spec$MyGGplotTheme(scaler = 0.8)
 
-# Join with skeleton ----------------------------------------------
+# Join population with skeleton -----------------------------------
 
 # join the different sources of population count data
 # with the skeleton
-dat$joined <-
+dat$pop_joined <-
   dat$skeleton %>% 
   left_join(
     select(
@@ -361,8 +371,44 @@ dat$joined <-
       !is.na(population_midyear_hmd) ~ population_source_hmd,
       TRUE ~ as.character(NA)
     )
-  ) %>%
-  select(id, population_midyear, population_source)
+  )
+
+# Derive exposures ------------------------------------------------
+
+dat$exposure_joined <-
+  dat$pop_joined %>%
+  left_join(region_meta, by = c('region_iso' = 'region_code_iso3166_2')) %>%
+  # adjust person-years of exposure for leap-weeks when reporting
+  # period of deaths is the iso-week-date calendar
+  mutate(
+    population_py = ifelse(
+      calendar_stmf == 'iso_week_date' &
+        YearHasIsoWeek53(year),
+      round(population_midyear*371/365, 2),
+      population_midyear
+    )
+  )
+
+# visual check of population exposures
+fig$population_py <-
+  dat$exposure_joined %>%
+  mutate(year1920 = year %in% 2019:2020) %>%
+  PopPyramids(
+    population = population_py,
+    age = age_start, sex = sex, year = year,
+    highlight = year1920,
+    facet = region_iso
+  ) +
+  labs(
+    y = 'Person-years of exposure in 1000s',
+    title = 'Person-year exposure estimates 2015-18 (grey) and 2019/20 (red)'
+  ) +
+  fig_spec$MyGGplotTheme(scaler = 0.8)
+
+# select variables of interest for joined data
+dat$joined <-
+  dat$exposure_joined %>%
+  select(id, population_midyear, population_py, population_source)
 
 # Export ----------------------------------------------------------
 
@@ -374,7 +420,9 @@ saveRDS(
 fig_spec$ExportFigure(
   fig$wpp_population, path = cnst$path_out, scale = 2
 )
-
+fig_spec$ExportFigure(
+  fig$population_py, path = cnst$path_out, scale = 2
+)
 fig_spec$ExportFigure(
   fig$gb_population, path = cnst$path_out
 )
