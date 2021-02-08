@@ -36,11 +36,11 @@ dat$lt_input_sub <-
 source(glue('{wd}/cfg/fig_specs.R'))
 
 # simple piecewise-exponential life-table
-CalculateLifeTable <- 
+CalculateLifeTable <-
   function (df, x, nx, Dx, Ex) {
-    
+
     require(dplyr)
-    
+
     df %>%
     transmute(
       x = {{x}},
@@ -53,8 +53,8 @@ CalculateLifeTable <-
       Lx = dx/mx,
       Tx = rev(cumsum(rev(Lx))),
       ex = Tx/lx
-    )  
-    
+    )
+
   }
 
 # Calculate annual life tables ------------------------------------
@@ -68,6 +68,10 @@ dat$lt <-
     CalculateLifeTable(.x, age_start, age_width, death_total, population_midyear)
   }) %>%
   ungroup()
+
+# save just the life tables
+df_lt <- dat$ltdat$lt
+write_rds(df_lt, path = "out/it_output.rds")
 
 # Analyse ex and mx changes ---------------------------------------
 
@@ -98,7 +102,7 @@ dat$lt_annual_change_2020 <-
     mx_ratio_2020 = mx_2020 / mx_2019
   )
 # join average pre 2020 and 2020 changes
-dat$lt_annual_change <- 
+dat$lt_annual_change <-
   full_join(
     dat$lt_avg_annual_change_pre2020,
     dat$lt_annual_change_2020,
