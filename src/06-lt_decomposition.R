@@ -44,7 +44,7 @@ dat$lt_input_sub <-
 #create dataset needed for decomposition, I'm using data.table here but you can edit
 dat$mx_input_decomp <- data.table(dat$lt_input_sub)
 #add all.cause mx
-dat$mx_input_decom[,mx := death_total/population_midyear]
+dat$mx_input_decom[,mx := death_total/population_py]
 #add covid19 mx
 dat$mx_input_decom[,mx.covid := ifelse(year %in% 2020, 
                                        mx*(death_covid/death_total),0)]
