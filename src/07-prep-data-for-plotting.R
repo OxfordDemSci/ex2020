@@ -6,6 +6,8 @@
 library(tidyverse)
 library(magrittr)
 library(countrycode)
+library(here); wd <- here()
+library(glue)
 
 
 
@@ -32,13 +34,13 @@ ids <- tibble(
         )
     )
 
-write_rds(ids, "out/ids.rds")
+write_rds(ids, glue('{wd}/out/ids.rds'))
 
 
 # dataset for figures 1 and 2 ---------------------------------------------
 
 # get the lt estimates
-df_lt <- read_rds("out/it_output.rds")
+df_lt <- read_rds("{wd}/out/it_output.rds" %>% glue)
 
 ex_diff <- df_lt %>%
     transmute(
@@ -88,14 +90,14 @@ df_ex <- left_join(ex20, ex1519) %>%
     left_join(rank_d0m20)
 
 # save the data frame for figures 1 and 2
-write_rds(df_ex, "out/df_ex.rds")
-write_csv(df_ex, "out/df_ex.csv") # export for Ian
+write_rds(df_ex, "{wd}/out/df_ex.rds" %>% glue)
+write_csv(df_ex, "{wd}/out/df_ex.csv" %>% glue) # export for Ian
 
 
 # datasets for figures 3 and 4 --------------------------------------------
 
 
-df_dec <- read_rds("out/decomposition_results.rds")
+df_dec <- read_rds("{wd}/out/decomposition_results.rds" %>% glue)
 
 # for Fig 3
 df_dec_age <- df_dec$decomposition_results_by_age %>%
@@ -113,7 +115,7 @@ df_dec_age <- df_dec$decomposition_results_by_age %>%
     drop_na(name) %>%
     mutate(name = fct_reorder(name, rank_d0m20))
 
-write_rds(df_dec_age, "out/df_dec_age.rds")
+write_rds(df_dec_age, "{wd}/out/df_dec_age.rds" %>% glue)
 
 # for Fig 4
 df_dec_age_cause <- df_dec$decomposition_results_by_age_cause %>%
@@ -136,4 +138,4 @@ df_dec_age_cause <- df_dec$decomposition_results_by_age_cause %>%
     drop_na(name) %>%
     mutate(name = fct_reorder(name, rank_d0m20))
 
-write_rds(df_dec_age_cause, "out/df_dec_age_cause.rds")
+write_rds(df_dec_age_cause, "{wd}/out/df_dec_age_cause.rds" %>% glue)

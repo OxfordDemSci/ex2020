@@ -11,8 +11,10 @@ library(prismatic)
 library(patchwork)
 library(hrbrthemes)
 library(cowplot)
+library(here); wd <- here()
+library(glue)
 
-df_ex <- read_rds("out/df_ex.rds")
+df_ex <- read_rds("{wd}/out/df_ex.rds" %>% glue)
 
 # figrue 1 -- absolute levels of life expectancy --------------------------
 
@@ -53,7 +55,8 @@ df_ex %>%
     )
 
 one <- last_plot()
-ggsave("out/fig-1.pdf", one, width = 9, height = 4, device = cairo_pdf)
+ggsave("{wd}/out/fig-1.pdf" %>% glue, one,
+       width = 9, height = 4, device = cairo_pdf)
 
 
 
@@ -100,7 +103,7 @@ df_ex %>%
     )
 
 two <- last_plot()
-ggsave("out/fig-2.pdf", two, width = 9, height = 4, device = cairo_pdf)
+ggsave("{wd}/out/fig-2.pdf" %>% glue, two, width = 9, height = 4, device = cairo_pdf)
 
 
 
@@ -109,9 +112,11 @@ ggsave("out/fig-2.pdf", two, width = 9, height = 4, device = cairo_pdf)
 
 # plot decomposition ------------------------------------------------------
 
+df_dec_age <- read_rds("{wd}/out/df_dec_age.rds" %>% glue)
+df_dec_age_cause <- read_rds("{wd}/out/df_dec_age_cause.rds" %>% glue)
 
-# alternative -- without geofaceting
-# rank by the male decrease 2020
+
+# figure 3 -- contributions by age groups ---------------------------------
 
 df_dec_age %>%
     filter(sex == "Female") %>%
@@ -143,10 +148,6 @@ three_f <- last_plot()
 
 
 df_dec_age %>%
-    left_join(ids) %>%
-    left_join(rank_d0m20) %>%
-    drop_na(name) %>%
-    mutate(name = fct_reorder(name, rank_d0m20)) %>%
     filter(sex == "Male") %>%
     ggplot(aes(ctb, age3, fill = period))+
     geom_col()+
@@ -176,18 +177,13 @@ three_m <- last_plot()
 
 three <- three_f / three_m
 
-ggsave("out/fig-3.pdf", three, width = 10, height = 8, device = cairo_pdf)
+ggsave("{wd}/out/fig-3.pdf" %>% glue, three, width = 10, height = 8, device = cairo_pdf)
 
 
 
 # figure 4 -- split 2020 into covid and non-covid -------------------------
 
-
 df_dec_age_cause %>%
-    left_join(ids) %>%
-    left_join(rank_d0m20) %>%
-    drop_na(name) %>%
-    mutate(name = fct_reorder(name, rank_d0m20)) %>%
     filter(sex == "Female") %>%
     ggplot(aes(ctb, age3, fill = period_cause))+
     geom_col()+
@@ -250,5 +246,10 @@ four_m <- last_plot()
 
 four <- four_f / four_m
 
-ggsave("out/fig-4.pdf", four, width = 10, height = 8, device = cairo_pdf)
+ggsave("{wd}/out/fig-4.pdf" %>% glue, four, width = 10, height = 8, device = cairo_pdf)
 
+
+# ggsave("tmp/fig-1.png", one, width = 9, height = 4, type = "cairo")
+# ggsave("tmp/fig-2.png", two, width = 9, height = 4, type = "cairo")
+# ggsave("tmp/fig-3.png", three, width = 10, height = 8, type = "cairo")
+# ggsave("tmp/fig-4.png", four, width = 10, height = 8, type = "cairo")
