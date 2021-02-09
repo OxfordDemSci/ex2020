@@ -11,9 +11,10 @@
 - `death_total_nweeksmiss`: number of weeks in the raw input data with at least one missing death count for this region-sex-year stratum. missings are counted when the week is implicitly missing from the input data or if any NAs are encounted in this week or if age groups are implicitly missing for this week in the input data (e.g. 40-45, 50-55)
 - `death_total_minnageraw`: the minimum number of age-groups in the raw input data within this region-sex-year stratum
 - `death_total_q90nageraw`: 90% of the weeks in the raw input data within this region-sex-year stratum feature at least this many age groups
+- `death_total_source`: source of the all-cause death data
 - `population_midyear`: midyear population (July 1st)
 - `population_py`: person-years of exposure (adjusted for leap-weeks)
-- `population_source`: where the data originates
+- `population_source`: source of the population count/exposure data
 - `death_covid`: number of deaths due to covid
 - `death_covid_date`: number of deaths due to covid as of <date>
 - `death_covid_nageraw`: the number of age groups in the covid input data
@@ -21,13 +22,19 @@
 
 ## Deaths
 
-- source: STMF input data series
-- harmonized to single ages via pclm
-  - pclm iterates over country, sex, year, and within-year age grouping pattern and converts irregular age groupings, which may vary by country, year and week into a regular age grouping of 0:110
-  - smoothing parameters estimated via BIC grid search seperately for every pclm iteration
-  - last age group set to [110,111)
-  - ages 100:110 are then summed into 100+ to be consistent with mid-year population information
-- deaths in unknown weeks are considered; deaths in unknown ages are not considered
+- source:
+  - STMF input data series
+  - ONS for GB-EAW pre 2020
+- STMF:
+  - harmonized to single ages via pclm
+    - pclm iterates over country, sex, year, and within-year age grouping pattern and converts irregular age groupings, which may vary by country, year and week into a regular age grouping of 0:110
+    - smoothing parameters estimated via BIC grid search seperately for every pclm iteration
+    - last age group set to [110,111)
+    - ages 100:110+ are then summed into 100+ to be consistent with mid-year population information
+  - deaths in unknown weeks are considered; deaths in unknown ages are not considered
+ - ONS:
+  - data already in single ages
+  - ages 100:105+ are summed into 100+ to be consistent with mid-year population information
 
 ## Population
 
