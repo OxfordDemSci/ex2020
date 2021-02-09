@@ -13,7 +13,6 @@ library(patchwork)
 library(paletteer)
 library(hrbrthemes)
 library(cowplot)
-library(geofacet)
 
 library(countrycode)
 
@@ -187,64 +186,46 @@ dec_age <- df_dec$decomposition_results_by_age %>%
     ungroup()
 
 dec_age_cause <- df_dec$decomposition_results_by_age_cause %>%
+    filter(! (year.final!=2020&cause=="covid")) %>%  # remove impossible combination
     mutate(
         age3 = x %>% cut(c(0, 60, 80, Inf), right = FALSE),
         period = year.final %>% cut(c(2015, 2019, 2020)) %>%
-            lvls_revalue(c("2015-19", "2019-20"))
+            lvls_revalue(c("2015-19", "2019-20")),
+        period_cause = paste(period, cause, sep = "_") %>%
+            as_factor() %>% droplevels() %>%
+            lvls_revalue(c("2015-19", "2019-20 COVID", "2019-20 non-COVID")) %>%
+            lvls_reorder(c(1,3,2))
     ) %>%
-    group_by(code = region_iso, sex, age3, cause, period) %>%
+    group_by(code = region_iso, sex, age3, period_cause) %>%
     summarise(ctb = contribution %>% sum(na.rm = T)) %>%
     ungroup()
 
-# read in our custom geofacet grid
-grid_ex2020 <- read_rds("out/grid_ex2020.rds")
 
-
-# figure 3 -- decomp age --------------------------------------------------
+# alternative -- without geofaceting
+# rank by the male decrease 2020
 
 dec_age %>%
-    filter(sex == "Male") %>%
-    ggplot(aes(ctb, age3, fill = period))+
-    geom_col()+
-    geom_vline(xintercept = 0, size = .25, color = "#dfff00")+
-    facet_geo(~code, grid = grid_ex2020, label = "name")+
-    scale_fill_manual(values = c("#003737FF", "#3FB3F7FF"))+
-    coord_cartesian(xlim = c(-1.9, 1.9), expand = F)+
-    scale_x_continuous(breaks = seq(-1, 1, 1))+
-    theme_minimal(base_family = font_rc)+
-    theme(
-        panel.grid.minor.y = element_blank(),
-        # panel.grid.major.y = element_blank(),
-        panel.spacing = unit(.5, "lines"),
-        legend.position = c(.25, .45),
-        legend.background = element_rect(color = "#dfff00", size = 2),
-        plot.background = element_rect(color = "#dfff00", size = 1)
-    )+
-    labs(
-        fill = "MALES",
-        x = "Losses|Gains in life expectancy at birth, years",
-        y = "Age groups"
-    )
-
-a3 <- last_plot()
-
-ggsave("out/fig-3m.pdf", a3, width = 10, height = 4, device = cairo_pdf)
-
-dec_age %>%
+    left_join(ids) %>%
+    left_join(rank_d0m20) %>%
+    drop_na(name) %>%
+    mutate(name = fct_reorder(name, rank_d0m20)) %>%
     filter(sex == "Female") %>%
     ggplot(aes(ctb, age3, fill = period))+
     geom_col()+
     geom_vline(xintercept = 0, size = .25, color = "#18ffff")+
-    facet_geo(~code, grid = grid_ex2020, label = "name")+
+    facet_wrap(~name, ncol = 6, dir = "v")+
     scale_fill_manual(values = c("#38006b", "#e91e63"))+
-    coord_cartesian(xlim = c(-1.9, 1.9), expand = F)+
-    scale_x_continuous(breaks = seq(-1, 1, 1))+
+    coord_cartesian(xlim = c(-1, 1.5), expand = F)+
+    scale_x_continuous(
+        breaks = seq(-1, 1, .5),
+        labels = c("-1", ".5", 0, ".5", 1)
+    )+
     theme_minimal(base_family = font_rc)+
     theme(
         panel.grid.minor.y = element_blank(),
         # panel.grid.major.y = element_blank(),
         panel.spacing = unit(.5, "lines"),
-        legend.position = c(.25, .45),
+        legend.position = c(.92, .06),
         legend.background = element_rect(color = "#18ffff", size = 2),
         plot.background = element_rect(color = "#18ffff", size = 1)
     )+
@@ -254,5 +235,42 @@ dec_age %>%
         y = "Age groups"
     )
 
-b3 <- last_plot()
-ggsave("out/fig-3f.pdf", b3, width = 10, height = 4, device = cairo_pdf)
+three_f <- last_plot()
+
+
+dec_age %>%
+    left_join(ids) %>%
+    left_join(rank_d0m20) %>%
+    drop_na(name) %>%
+    mutate(name = fct_reorder(name, rank_d0m20)) %>%
+    filter(sex == "Male") %>%
+    ggplot(aes(ctb, age3, fill = period))+
+    geom_col()+
+    geom_vline(xintercept = 0, size = .25, color = "#dfff00")+
+    facet_wrap(~name, ncol = 6, dir = "v")+
+    scale_fill_manual(values = c("#003737FF", "#3FB3F7FF"))+
+    coord_cartesian(xlim = c(-1, 1.5), expand = F)+
+    scale_x_continuous(
+        breaks = seq(-1, 1, .5),
+        labels = c("-1", ".5", 0, ".5", 1)
+    )+
+    theme_minimal(base_family = font_rc)+
+    theme(
+        panel.grid.minor.y = element_blank(),
+        # panel.grid.major.y = element_blank(),
+        panel.spacing = unit(.5, "lines"),
+        legend.position = c(.92, .06),
+        legend.background = element_rect(color = "#dfff00", size = 2),
+        plot.background = element_rect(color = "#dfff00", size = 1)
+    )+
+    labs(
+        fill = "MALES",
+        x = "Losses|Gains in life expectancy at birth, years",
+        y = "Age groups"
+    )
+
+three_m <- last_plot()
+
+three <- three_f / three_m
+
+ggsave("tmp/fig-3-alt.pdf", three, width = 10, height = 8, device = cairo_pdf)
