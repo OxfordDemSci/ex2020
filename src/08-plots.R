@@ -2,81 +2,21 @@
 # 2021-02-02 -- ex2020
 # Re-touch figures
 #===============================================================================
-# UPD  2021-02-08 ------------------------------
+# UPD  2021-02-09 ------------------------------
 
 
 library(tidyverse)
 library(magrittr)
 library(prismatic)
-library(ggdark)
 library(patchwork)
-library(paletteer)
 library(hrbrthemes)
 library(cowplot)
 
-library(countrycode)
-
-
-
-# plot 1 ex levels and changes --------------------------------------------
-
-# get the lt estimates
-df_lt <- read_rds("out/it_output.rds")
-
-ex_diff <- df_lt %>%
-    transmute(
-        code = region_iso,
-        sex, year, age = x,
-        ex
-    ) %>%
-    group_by(code, sex, age) %>%
-    mutate(ex_diff = ex %>% subtract(lag(ex))) %>%
-    ungroup()
-
-ex20 <- ex_diff %>% filter(year == 2020)
-
-ex1519 <- ex_diff %>%
-    filter(! year %in% c(2020, 2015)) %>%
-    select(-ex) %>%
-    group_by(code, sex, age) %>%
-    summarise(ex_diff_1519 = ex_diff %>% sum) %>%
-    ungroup()
-
-ex1519asb <- df_lt %>%
-    transmute(
-        code = region_iso,
-        sex, year, age = x,
-        ex
-    ) %>%
-    filter(year %in% c(2015, 2019)) %>%
-    pivot_wider(names_from = year, values_from = ex, names_prefix = "ex_")
-
-# ranking variable for Fig 1 (absolute levels) -- based on Female e0 2019
-rank_e0f19 <- ex1519asb %>%
-    filter(age == 0, sex == "Female") %>%
-    arrange(ex_2019) %>%
-    transmute(code, rank_e0f19 = seq_along(code))
-
-# ranking variable for Fig 2 (changes) -- based on the Male e0 change 2020
-rank_d0m20 <- ex20 %>%
-    filter(age == 0, sex == "Male") %>%
-    arrange(ex_diff) %>%
-    transmute(code, rank_d0m20 = seq_along(code))
-
-
-df_plot <- left_join(ex20, ex1519) %>%
-    left_join(ex1519asb) %>%
-    left_join(ids) %>%
-    left_join(rank_e0f19) %>%
-    left_join(rank_d0m20)
-
-# save the data frame for figures 1 and 2
-write_rds(df_plot, "out/df_plot.csv")
-
+df_ex <- read_rds("out/df_ex.rds")
 
 # figrue 1 -- absolute levels of life expectancy --------------------------
 
-df_plot %>%
+df_ex %>%
     mutate(name = fct_reorder(name, rank_e0f19)) %>%
     filter(age %in% c(0, 60, 80)) %>%
     drop_na(name) %>%
@@ -112,15 +52,14 @@ df_plot %>%
         y = NULL
     )
 
-p_1 <- last_plot()
-ggsave("out/fig-1.pdf", p_1, width = 9, height = 4, device = cairo_pdf)
+one <- last_plot()
+ggsave("out/fig-1.pdf", one, width = 9, height = 4, device = cairo_pdf)
 
 
 
 # figure 2 -- changes in life expectancy ----------------------------------
 
-
-df_plot %>%
+df_ex %>%
     filter(age %in% c(0, 60, 80)) %>%
     drop_na(name) %>%
     mutate(name = fct_reorder(name, rank_d0m20)) %>%
@@ -160,8 +99,8 @@ df_plot %>%
         size = 3, family = font_rc
     )
 
-p_2 <- last_plot()
-ggsave("out/fig-2.pdf", p_2, width = 9, height = 4, device = cairo_pdf)
+two <- last_plot()
+ggsave("out/fig-2.pdf", two, width = 9, height = 4, device = cairo_pdf)
 
 
 
@@ -170,45 +109,11 @@ ggsave("out/fig-2.pdf", p_2, width = 9, height = 4, device = cairo_pdf)
 
 # plot decomposition ------------------------------------------------------
 
-df_dec <- read_rds("out/decomposition_results.rds")
-
-
-
-dec_age <- df_dec$decomposition_results_by_age %>%
-    mutate(
-        age3 = x %>% cut(c(0, 60, 80, Inf), right = FALSE) %>%
-            lvls_revalue(c("0 to 59", "60 to 79", "80 +")),
-        period = year.final %>% cut(c(2015, 2019, 2020)) %>%
-            lvls_revalue(c("2015-19", "2019-20"))
-    ) %>%
-    group_by(code = region_iso, sex, age3, period) %>%
-    summarise(ctb = contribution %>% sum(na.rm = T)) %>%
-    ungroup()
-
-dec_age_cause <- df_dec$decomposition_results_by_age_cause %>%
-    filter(! (year.final!=2020&cause=="covid")) %>%  # remove impossible combination
-    mutate(
-        age3 = x %>% cut(c(0, 60, 80, Inf), right = FALSE),
-        period = year.final %>% cut(c(2015, 2019, 2020)) %>%
-            lvls_revalue(c("2015-19", "2019-20")),
-        period_cause = paste(period, cause, sep = "_") %>%
-            as_factor() %>% droplevels() %>%
-            lvls_revalue(c("2015-19", "2019-20 COVID", "2019-20 non-COVID")) %>%
-            lvls_reorder(c(1,3,2))
-    ) %>%
-    group_by(code = region_iso, sex, age3, period_cause) %>%
-    summarise(ctb = contribution %>% sum(na.rm = T)) %>%
-    ungroup()
-
 
 # alternative -- without geofaceting
 # rank by the male decrease 2020
 
-dec_age %>%
-    left_join(ids) %>%
-    left_join(rank_d0m20) %>%
-    drop_na(name) %>%
-    mutate(name = fct_reorder(name, rank_d0m20)) %>%
+df_dec_age %>%
     filter(sex == "Female") %>%
     ggplot(aes(ctb, age3, fill = period))+
     geom_col()+
@@ -223,7 +128,6 @@ dec_age %>%
     theme_minimal(base_family = font_rc)+
     theme(
         panel.grid.minor.y = element_blank(),
-        # panel.grid.major.y = element_blank(),
         panel.spacing = unit(.5, "lines"),
         legend.position = c(.92, .06),
         legend.background = element_rect(color = "#18ffff", size = 2),
@@ -238,7 +142,7 @@ dec_age %>%
 three_f <- last_plot()
 
 
-dec_age %>%
+df_dec_age %>%
     left_join(ids) %>%
     left_join(rank_d0m20) %>%
     drop_na(name) %>%
@@ -257,7 +161,6 @@ dec_age %>%
     theme_minimal(base_family = font_rc)+
     theme(
         panel.grid.minor.y = element_blank(),
-        # panel.grid.major.y = element_blank(),
         panel.spacing = unit(.5, "lines"),
         legend.position = c(.92, .06),
         legend.background = element_rect(color = "#dfff00", size = 2),
@@ -273,4 +176,79 @@ three_m <- last_plot()
 
 three <- three_f / three_m
 
-ggsave("tmp/fig-3-alt.pdf", three, width = 10, height = 8, device = cairo_pdf)
+ggsave("out/fig-3.pdf", three, width = 10, height = 8, device = cairo_pdf)
+
+
+
+# figure 4 -- split 2020 into covid and non-covid -------------------------
+
+
+df_dec_age_cause %>%
+    left_join(ids) %>%
+    left_join(rank_d0m20) %>%
+    drop_na(name) %>%
+    mutate(name = fct_reorder(name, rank_d0m20)) %>%
+    filter(sex == "Female") %>%
+    ggplot(aes(ctb, age3, fill = period_cause))+
+    geom_col()+
+    geom_vline(xintercept = 0, size = .25, color = "#18ffff")+
+    facet_wrap(~name, ncol = 5, dir = "v")+
+    scale_fill_manual(values = c("#38006b", "#e91e63", "#ff00ff"))+
+    coord_cartesian(xlim = c(-1, 1.5), expand = F)+
+    scale_x_continuous(
+        breaks = seq(-1, 1, .5),
+        labels = c("-1", ".5", 0, ".5", 1)
+    )+
+    theme_minimal(base_family = font_rc)+
+    theme(
+        panel.grid.minor.y = element_blank(),
+        panel.spacing = unit(.5, "lines"),
+        legend.position = c(.9, .1),
+        legend.background = element_rect(color = "#18ffff", size = 2),
+        plot.background = element_rect(color = "#18ffff", size = 1)
+    )+
+    labs(
+        fill = "FEMALES",
+        x = "Losses|Gains in life expectancy at birth, years",
+        y = "Age groups"
+    )
+
+four_f <- last_plot()
+
+
+df_dec_age_cause %>%
+    left_join(ids) %>%
+    left_join(rank_d0m20) %>%
+    drop_na(name) %>%
+    mutate(name = fct_reorder(name, rank_d0m20)) %>%
+    filter(sex == "Male") %>%
+    ggplot(aes(ctb, age3, fill = period_cause))+
+    geom_col()+
+    geom_vline(xintercept = 0, size = .25, color = "#dfff00")+
+    facet_wrap(~name, ncol = 6, dir = "v")+
+    scale_fill_manual(values = c("#003737FF", "#3FB3F7FF", "#00ffff"))+
+    coord_cartesian(xlim = c(-1, 1.5), expand = F)+
+    scale_x_continuous(
+        breaks = seq(-1, 1, .5),
+        labels = c("-1", ".5", 0, ".5", 1)
+    )+
+    theme_minimal(base_family = font_rc)+
+    theme(
+        panel.grid.minor.y = element_blank(),
+        panel.spacing = unit(.5, "lines"),
+        legend.position = c(.9, .1),
+        legend.background = element_rect(color = "#dfff00", size = 2),
+        plot.background = element_rect(color = "#dfff00", size = 1)
+    )+
+    labs(
+        fill = "MALES",
+        x = "Losses|Gains in life expectancy at birth, years",
+        y = "Age groups"
+    )
+
+four_m <- last_plot()
+
+four <- four_f / four_m
+
+ggsave("out/fig-4.pdf", four, width = 10, height = 8, device = cairo_pdf)
+
