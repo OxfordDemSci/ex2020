@@ -25,6 +25,7 @@
 - source:
   - STMF input data series
   - ONS for GB-EAW pre 2020
+  - CDC for US pre 2020
 - STMF:
   - harmonized to single ages via pclm
     - pclm iterates over country, sex, year, and within-year age grouping pattern and converts irregular age groupings, which may vary by country, year and week into a regular age grouping of 0:110
@@ -32,9 +33,11 @@
     - last age group set to [110,111)
     - ages 100:110+ are then summed into 100+ to be consistent with mid-year population information
   - deaths in unknown weeks are considered; deaths in unknown ages are not considered
- - ONS:
+- ONS:
   - data already in single ages
   - ages 100:105+ are summed into 100+ to be consistent with mid-year population information
+- CDC:
+  - data already in age grouping 0:100+
 
 ## Population
 
