@@ -14,7 +14,7 @@ cnst <- within(cnst, {
   regions_for_analysis = c(
     'AT', 'BE', 'BG', 'CH', 'CL', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR',
     'GB-EAW', 'GB-NIR', 'GB-SCT',
-    'HU', 'IL', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI'
+    'HU', 'IL', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI', 'US'
   )
   path_out = glue('{wd}/out')
   path_tmp = glue('{wd}/tmp')
@@ -70,8 +70,7 @@ dat$lt <-
   ungroup()
 
 # save just the life tables
-df_lt <- dat$lt
-write_rds(df_lt, path = "out/it_output.rds")
+saveRDS(dat$lt, file = glue('{wd}/out/lt_output.rds'))
 
 # Analyse ex and mx changes ---------------------------------------
 

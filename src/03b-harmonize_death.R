@@ -1,6 +1,6 @@
 # Harmonize data on death counts
 #
-# We harmonize death counts data from two sources:
+# We harmonize death counts data from 3 sources:
 # (1): the HMD-STMF input data base for weekly death counts by age
 #      and sex for numerous countries. This is our main source. The data
 #      is updated weekly and includes the most recent information on
@@ -9,6 +9,9 @@
 #      by age and sex for England & Wales. We use this data for years
 #      2015 to 2019 for England & Wales because the age grouping in the
 #      STMF data for these years is too coarse.
+# (3): the US CDC for annual death counts by age and sex for the United
+#      States. We use this data for years 2015 to 2019 for the US,
+#      lacking any STMF data for these years.
 #
 # The STMF data is harmonizes as follows:
 #
@@ -29,7 +32,8 @@
 
 library(here); library(glue)
 library(yaml); library(readr)
-library(dplyr); library(purrr); library(tidyr); library(ggplot2)
+library(dplyr); library(purrr); library(tidyr); library(stringr)
+library(ggplot2)
 library(ungroup)
 library(foreach); library(doParallel)
 
@@ -59,6 +63,8 @@ cnst <- within(cnst, {
   path_stmf = glue('{wd}/dat/stmf/stmf.rds')
   # path to ons data
   path_ons = glue('{wd}/dat/ons/ons_annual_deaths.rds')
+  # path to cdc data
+  path_cdc = glue('{wd}/dat/cdc/us_annual_deaths.txt')
   # where to put the harmonized data
   path_harmonized = glue('{wd}/tmp/harmonized_death.rds')
   
@@ -70,10 +76,13 @@ cnst <- within(cnst, {
     select(region_code_iso3166_2, region_code_stmf) %>%
     drop_na()
   
+  # lookup table for sex codes by source
   code_sex_stmf =
     c(m = config$skeleton$sex$Male, f = config$skeleton$sex$Female)
   code_sex_ons =
     c(male = config$skeleton$sex$Male, female = config$skeleton$sex$Female)
+  code_sex_cdc =
+    c(M = config$skeleton$sex$Male, F = config$skeleton$sex$Female)
   # pclm life-table closeout age
   pclm_highest_age = 110
   # number of cores to run pclm on
@@ -98,6 +107,8 @@ dat$skeleton <- readRDS(cnst$path_skeleton)
 dat$stmf <- readRDS(cnst$path_stmf)
 # ons death counts
 dat$ons <- readRDS(cnst$path_ons)
+# cdc death counts
+dat$cdc <- read_tsv(cnst$path_cdc, n_max = 1010)
 
 # 01 STMF harmonize labels ----------------------------------------
 
@@ -470,6 +481,42 @@ dat$ons_ready_for_join <-
     death_total_q90nageraw_ons = death_total_q90nageraw
   )
 
+# CDC harmonize data ----------------------------------------------
+
+dat$cdc_ready_for_join <-
+  dat$cdc %>%
+  select(
+    year = Year, sex = `Gender Code`,
+    age_start = `Single-Year Ages`, death_total = Deaths
+  ) %>%
+  mutate(
+    sex = as.character(factor(
+      sex, levels = names(cnst$code_sex_cdc),
+      labels = cnst$code_sex_cdc)
+    ),
+    age_start = case_when(
+      age_start == '< 1 year' ~ 0,
+      age_start == '100+ years' ~ 100,
+      TRUE ~ as.numeric(stringr::str_extract(age_start, '^[[:digit:]]+'))
+    )
+  ) %>%
+  # add data quality indicators
+  mutate(
+    death_total_nweeksmiss = 0,
+    death_total_minnageraw = 101,
+    death_total_q90nageraw = 101
+  ) %>%
+  # add id
+  mutate(
+    id = GenerateRowID(region_iso = 'US', sex, age_start, year)
+  ) %>%
+  select(
+    id, death_total_cdc = death_total,
+    death_total_nweeksmiss_cdc = death_total_nweeksmiss,
+    death_total_minnageraw_cdc = death_total_minnageraw,
+    death_total_q90nageraw_cdc = death_total_q90nageraw
+  )
+
 # Final join ------------------------------------------------------
 
 dat$death <-
@@ -480,30 +527,38 @@ dat$death <-
   left_join(
     dat$ons_ready_for_join
   ) %>%
+  left_join(
+    dat$cdc_ready_for_join
+  ) %>%
   # for GB-EAW in the years prior to 2020, choose the ONS data,
   # else choose the STMF data
   mutate(
     death_total_source = case_when(
       region_iso == 'GB-EAW' & year < 2020 ~ 'ons',
+      region_iso == 'US' & year < 2020 ~ 'cdc',
       TRUE ~ 'stmf'
     )
   ) %>%
   mutate(
     death_total = case_when(
       death_total_source == 'ons' ~ death_total_ons,
-      death_total_source == 'stmf' ~ death_total_stmf
+      death_total_source == 'stmf' ~ death_total_stmf,
+      death_total_source == 'cdc' ~ death_total_cdc
     ),
     death_total_nweeksmiss = case_when(
       death_total_source == 'ons' ~ death_total_nweeksmiss_ons,
-      death_total_source == 'stmf' ~ death_total_nweeksmiss_stmf
+      death_total_source == 'stmf' ~ death_total_nweeksmiss_stmf,
+      death_total_source == 'cdc' ~ death_total_nweeksmiss_cdc
     ),
     death_total_minnageraw = case_when(
       death_total_source == 'ons' ~ death_total_minnageraw_ons,
-      death_total_source == 'stmf' ~ death_total_minnageraw_stmf
+      death_total_source == 'stmf' ~ death_total_minnageraw_stmf,
+      death_total_source == 'cdc' ~ death_total_minnageraw_cdc
     ),
     death_total_q90nageraw = case_when(
       death_total_source == 'ons' ~ death_total_q90nageraw_ons,
-      death_total_source == 'stmf' ~ death_total_q90nageraw_stmf
+      death_total_source == 'stmf' ~ death_total_q90nageraw_stmf,
+      death_total_source == 'cdc' ~ death_total_q90nageraw_cdc
     )
   ) %>%
   select(
