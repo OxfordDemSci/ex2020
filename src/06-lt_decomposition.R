@@ -16,7 +16,7 @@ cnst <- within(cnst, {
   regions_for_analysis = c(
     'AT', 'BE', 'BG', 'CH', 'CL', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR',
     'GB-EAW', 'GB-NIR', 'GB-SCT',
-    'HU', 'IL', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI', 'US'
+    'HU', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI', 'US'
   )
   regions_for_cause_of_death_analysis =c(
     'BE', 'CH', 'CL', 'CZ', 'DE', 'DK', 'ES', 'FR', 'GB-EAW', 'GB-SCT',
@@ -35,7 +35,9 @@ fig <- list()
 # Data ------------------------------------------------------------
 source(glue('{wd}/cfg/fig_specs.R'))
 
-dat$lt_input <- readRDS(glue('{cnst$path_out}/lt_input.rds'))
+#dat$lt_input <- readRDS(glue('{cnst$path_out}/lt_input.rds'))
+
+dat$lt_input <- readRDS(glue('{cnst$path_out}/lt_input_85.rds'))
 
 dat$lt_input_sub <-
   dat$lt_input %>%
