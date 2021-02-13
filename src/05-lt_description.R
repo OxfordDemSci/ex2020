@@ -222,10 +222,13 @@ dat$lt_85 %>%
 
 walk(c(0, 60), ~{
   fig[[glue('e{.x}_consistency_check')]] <<-
-    dat$lt_85 %>%
-    filter(x == .x) %>%
+    bind_rows(
+      `85+` = filter(dat$lt_85, x == .x),
+      `100+` = filter(dat$lt_100, x == .x),
+      .id = 'open_age_group'
+    ) %>%
     ggplot(aes(x = year, y = ex, color = sex)) +
-    geom_point() +
+    geom_point(aes(shape = open_age_group)) +
     geom_segment(
       aes(x = 2015, xend = 2019, y = ex_wpp_estimate, yend = ex_wpp_estimate),
       data =
@@ -238,6 +241,7 @@ walk(c(0, 60), ~{
       labels = c('', '2016', '', '2018', '', '2020')
     ) +
     scale_color_manual(values = fig_spec$sex_colors) +
+    scale_shape_manual(values = c(`85+` = 1, `100+` = 3)) +
     fig_spec$MyGGplotTheme(panel_border = TRUE, grid = 'xy', scaler = 0.8) +
     labs(
       title = glue('Estimated yearly life expectancy at age {.x} compared with WPP 5 year average estimates'),
@@ -262,5 +266,5 @@ fig_spec$ExportFigure(fig$ex_change, path = cnst$path_out)
 fig_spec$ExportFigure(fig$hx_change, path = cnst$path_out)
 
 # save the ex consistency checks
-fig_spec$ExportFigure(fig$e0_consistency_check, path = cnst$path_tmp)
-fig_spec$ExportFigure(fig$e60_consistency_check, path = cnst$path_tmp)
+fig_spec$ExportFigure(fig$e0_consistency_check, path = cnst$path_out)
+fig_spec$ExportFigure(fig$e60_consistency_check, path = cnst$path_out)
