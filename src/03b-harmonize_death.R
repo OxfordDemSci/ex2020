@@ -23,7 +23,7 @@
 # https://github.com/mpascariu/ungroup).
 #
 # The ungrouping is separately applied to each
-# region x sex x year x agepattern combination in the input data.
+# region x sex x year x age pattern combination in the input data.
 #
 # The ungrouped STMF deaths are then aggregated into yearly death
 # counts by age.
