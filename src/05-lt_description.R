@@ -12,8 +12,8 @@ wd <- here()
 cnst <- list()
 cnst <- within(cnst, {
   regions_for_analysis = c(
-    'AT', 'BE', 'BG', 'CH', 'CL', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR',
-    'GB-EAW', 'GB-NIR', 'GB-SCT',
+    'AT', 'BE', 'BG', 'CH', 'CL', 'CZ', 'DE', 'DK',
+    'EE', 'ES', 'FI', 'FR', 'GB-EAW', 'GB-NIR', 'GB-SCT',
     'HU', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI', 'US'
   )
   path_out = glue('{wd}/out')
@@ -79,7 +79,7 @@ CalculateLifeTable <-
       qx = 1-px,
       lx = head(cumprod(c(1, px)), -1),
       dx = c(-diff(lx), tail(lx, 1)),
-      Lx = dx/mx,
+      Lx = ifelse(mx==0, lx*nx, dx/mx),
       Tx = rev(cumsum(rev(Lx))),
       ex = Tx/lx
     )
@@ -110,7 +110,7 @@ dat$lt_100 <-
   }) %>%
   ungroup()
 
-# Analyze ex and mx changes ---------------------------------------
+# Analyze ex and hx changes ---------------------------------------
 
 # average yearly change in mx, ex 2015 to 2019
 dat$lt_avg_annual_change_pre2020 <-
@@ -218,6 +218,62 @@ dat$lt_85 %>%
   labs(x = 'Age', y = 'density',
        title = 'Male densities of death 2020 (red) compared with previous years (grey)')
 
+# Analyze mx change -----------------------------------------------
+
+cnst$n_sim <- 10
+
+dat$lt_85_sim <-
+  dat$lt_input_85_sub %>%
+  filter(year >= 2019) %>%
+  expand_grid(id_sim = 1:cnst$n_sim) %>%
+  group_by(region_iso, sex, year, age_start) %>%
+  mutate(death_total_sim = rpois(cnst$n_sim, death_total)) %>%
+  arrange(region_iso, sex, year, age_start) %>%
+  group_by(id_sim, region_iso, sex, year) %>%
+  group_modify(~{
+    CalculateLifeTable(.x, age_start, age_width, death_total_sim, population_py)
+  }) %>%
+  ungroup()
+
+dat$mx_change <-
+  dat$lt_85_sim %>%
+  mutate(
+    age_group = cut(x, c(0, 40, 60, 70, Inf), right = FALSE)
+  ) %>%
+  group_by(id_sim, region_iso, sex, year, age_group) %>%
+  summarise(
+    mx = sum(dx)/sum(Lx)
+  ) %>%
+  pivot_wider(names_from = year, values_from = mx) %>%
+  mutate(diff = `2020`/`2019`) %>%
+  group_by(region_iso, sex, age_group) %>%
+  summarise(
+    mean_diff = mean(diff),
+    q025_diff = quantile(diff, 0.025),
+    q975_diff = quantile(diff, 0.975),
+    sig_elevated = ifelse(q025_diff > 1, TRUE, FALSE)
+  )
+
+fig$mx_change <-
+  dat$mx_change %>%
+  ggplot(aes(x = age_group, color = sex, group = sex)) +
+  geom_hline(yintercept = 1, color = 'grey') +
+  geom_pointrange(aes(
+    y = mean_diff,ymin = q025_diff, ymax = q975_diff,
+    alpha = sig_elevated
+  ), fatten = 1, position = position_dodge(width = 0.5)) +
+  scale_y_log10(breaks = c(0.8, 0.9, 1, 1.1, 1.2),
+                labels = c('.8', '.9', '1', '1.1', '1.2')) +
+  facet_wrap(~region_iso) +
+  fig_spec$MyGGplotTheme(scaler = 0.8, panel_border = TRUE) +
+  coord_flip() +
+  scale_alpha_manual(values = c(0.2, 1)) +
+  labs(
+    title = 'Ratio of life-table death rates 2020 to 2019',
+    subtitle = '95% CIs via Poisson simulation of raw death counts',
+    x = 'Age group', y = 'Ratio 2020 to 2019'
+  )
+
 # Compare our ex estimates with wpp estimates ---------------------
 
 walk(c(0, 60), ~{
@@ -264,6 +320,9 @@ fig_spec$ExportFigure(fig$ex_change, path = cnst$path_out)
 
 # save the hazard change
 fig_spec$ExportFigure(fig$hx_change, path = cnst$path_out)
+
+# save the life-table death rate change
+fig_spec$ExportFigure(fig$mx_change, path = cnst$path_out)
 
 # save the ex consistency checks
 fig_spec$ExportFigure(fig$e0_consistency_check, path = cnst$path_out)
