@@ -25,10 +25,39 @@ fig <- list()
 
 # Data ------------------------------------------------------------
 
-dat$lt_input <- readRDS(glue('{cnst$path_out}/lt_input.rds'))
+dat$lt_input_100 <- readRDS(glue('{cnst$path_out}/lt_input.rds'))
 
-dat$lt_input_sub <-
-  dat$lt_input %>%
+# Create open age group 85+ ---------------------------------------
+
+dat$lt_input_85 <-
+  dat$lt_input_100 %>%
+  # for each life-table input stratum create age group 85+
+  group_by(region_iso, sex, year) %>%
+  group_modify(~{
+    input_sorted <- arrange(.x, age_start)
+    lt85 <- filter(input_sorted, age_start <= 85)
+    lt85p <- filter(input_sorted, age_start > 85)
+    
+    lt85[nrow(lt85), 'age_width'] <- Inf
+    lt85[nrow(lt85), 'death_total'] <- sum(lt85p$death_total)
+    lt85[nrow(lt85), 'population_midyear'] <- sum(lt85p$population_midyear)
+    lt85[nrow(lt85), 'population_py'] <- sum(lt85p$population_py)
+    lt85[nrow(lt85), 'death_covid'] <- sum(lt85p$death_covid)
+    
+    return(lt85)
+  }) %>%
+  ungroup() %>%
+  # harmonize order of variables
+  select(all_of(names(dat$lt_input_100)))
+
+# Subset to countries of interest ---------------------------------
+
+dat$lt_input_85_sub <-
+  dat$lt_input_85 %>%
+  filter(region_iso %in% cnst$regions_for_analysis)
+
+dat$lt_input_100_sub <-
+  dat$lt_input_100 %>%
   filter(region_iso %in% cnst$regions_for_analysis)
 
 # Function --------------------------------------------------------
@@ -59,9 +88,11 @@ CalculateLifeTable <-
 
 # Calculate annual life tables ------------------------------------
 
-# life-tables by year
-dat$lt <-
-  dat$lt_input_sub %>%
+# life-tables by region, sex, and year
+
+# open age group 85+
+dat$lt_85 <-
+  dat$lt_input_85_sub %>%
   arrange(region_iso, sex, year, age_start) %>%
   group_by(region_iso, sex, year) %>%
   group_modify(~{
@@ -69,14 +100,21 @@ dat$lt <-
   }) %>%
   ungroup()
 
-# save just the life tables
-saveRDS(dat$lt, file = glue('{wd}/out/lt_output.rds'))
+# open age_group 100+
+dat$lt_100 <-
+  dat$lt_input_100_sub %>%
+  arrange(region_iso, sex, year, age_start) %>%
+  group_by(region_iso, sex, year) %>%
+  group_modify(~{
+    CalculateLifeTable(.x, age_start, age_width, death_total, population_py)
+  }) %>%
+  ungroup()
 
-# Analyse ex and mx changes ---------------------------------------
+# Analyze ex and mx changes ---------------------------------------
 
 # average yearly change in mx, ex 2015 to 2019
 dat$lt_avg_annual_change_pre2020 <-
-  dat$lt %>%
+  dat$lt_85 %>%
   arrange(region_iso, sex, x, year) %>%
   filter(year %in% 2015:2019) %>%
   group_by(region_iso, sex, x) %>%
@@ -92,7 +130,7 @@ dat$lt_avg_annual_change_pre2020 <-
   ungroup()
 # change in mx, ex 2020 to 2019
 dat$lt_annual_change_2020 <-
-  dat$lt %>%
+  dat$lt_85 %>%
   filter(year %in% c(2019, 2020)) %>%
   select(region_iso, sex, year, x, mx, ex) %>%
   pivot_wider(names_from = year, values_from = c(mx, ex)) %>%
@@ -108,10 +146,10 @@ dat$lt_annual_change <-
     by  = c('region_iso', 'sex', 'x')
   )
 
-# plot changes in remaining e0, e60, e80
+# plot changes in remaining e0, e60
 # from 2019 to 2020 by sex and region and compare with average
 # annual change over 2015 to 2019 period
-walk(c(0, 60, 80), ~{
+walk(c(0, 60), ~{
   fig[[glue('e{.x}_change')]] <<-
     dat$lt_annual_change %>%
     filter(x == .x) %>%
@@ -146,31 +184,31 @@ walk(c(0, 60, 80), ~{
 })
 
 fig$ex_change <-
-  fig$e0_change + fig$e60_change + fig$e80_change +
+  fig$e0_change + fig$e60_change +
   plot_layout(guides = 'collect') +
   plot_annotation(
     title = 'Annual change in years of remaining life-expectancy 2019 to 2020',
     subtitle = 'Points mark the average annual change in life-expectancy 2015 to 2019'
   )
 fig$ex_change
-fig_spec$ExportFigure(fig$ex_change, path = cnst$path_out)
 
 # compare hazards
-dat$lt_annual_change %>%
-  filter(x < 100) %>%
+fig$hx_change <-
+  dat$lt_annual_change %>%
+  filter(x >= 60) %>%
   ggplot(aes(x = x, color = sex)) +
-  geom_line(aes(y = mx_2020)) +
-  geom_line(aes(y = mx_2019), linetype = 2) +
+  geom_line(aes(y = mx_2020), size = 0.3) +
+  geom_line(aes(y = mx_2019), linetype = 6, size = 0.3) +
   facet_wrap(~region_iso) +
   scale_y_log10() +
   scale_color_manual(values = fig_spec$sex_colors) +
-  fig_spec$MyGGplotTheme(panel_border = TRUE) +
+  fig_spec$MyGGplotTheme(panel_border = TRUE, scaler = 0.8) +
   labs(x = 'Age', y = 'Deaths per person-year of exposure',
-       title = 'Hazard rates 2020 compared with 2019 (dashed)')
+       title = 'Hazard rates ages 60+ 2020 compared with 2019 (dashed)')
 
 # compare densities
-dat$lt %>%
-  filter(x < 100, x > 70, sex == 'Male') %>%
+dat$lt_85 %>%
+  filter(sex == 'Male') %>%
   mutate(is2020 = ifelse(year == 2020, TRUE, FALSE)) %>%
   ggplot(aes(x = x, group = year, color = is2020)) +
   geom_line(aes(y = dx)) +
@@ -182,16 +220,16 @@ dat$lt %>%
 
 # Compare our ex estimates with wpp estimates ---------------------
 
-walk(c(0, 60, 80), ~{
+walk(c(0, 60), ~{
   fig[[glue('e{.x}_consistency_check')]] <<-
-    dat$lt %>%
+    dat$lt_85 %>%
     filter(x == .x) %>%
     ggplot(aes(x = year, y = ex, color = sex)) +
     geom_point() +
     geom_segment(
       aes(x = 2015, xend = 2019, y = ex_wpp_estimate, yend = ex_wpp_estimate),
       data =
-        dat$lt_input_sub %>%
+        dat$lt_input_85_sub %>%
         filter(age_start == .x, year == 2018)
     ) +
     facet_wrap(~region_iso, scales = 'free_y') +
@@ -206,6 +244,23 @@ walk(c(0, 60, 80), ~{
       y = glue('e{.x}')
     )
 })
+fig$e0_consistency_check
+fig$e60_consistency_check
 
+# Export ----------------------------------------------------------
+
+# save the regrouped life table input data
+saveRDS(dat$lt_input_85, file = glue('{wd}/out/lt_input_85.rds'))
+
+# save the all cause life tables
+saveRDS(dat$lt, file = glue('{wd}/out/lt_output_85.rds'))
+
+# save e0, e60 change
+fig_spec$ExportFigure(fig$ex_change, path = cnst$path_out)
+
+# save the hazard change
+fig_spec$ExportFigure(fig$hx_change, path = cnst$path_out)
+
+# save the ex consistency checks
 fig_spec$ExportFigure(fig$e0_consistency_check, path = cnst$path_tmp)
-fig_spec$ExportFigure(fig$e80_consistency_check, path = cnst$path_tmp)
+fig_spec$ExportFigure(fig$e60_consistency_check, path = cnst$path_tmp)
