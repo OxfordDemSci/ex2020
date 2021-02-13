@@ -40,7 +40,7 @@ write_rds(ids, glue('{wd}/out/ids.rds'))
 # dataset for figures 1 and 2 ---------------------------------------------
 
 # get the lt estimates
-df_lt <- read_rds("{wd}/out/it_output.rds" %>% glue)
+df_lt <- read_rds("{wd}/out/lt_output.rds" %>% glue)
 
 ex_diff <- df_lt %>%
     transmute(
