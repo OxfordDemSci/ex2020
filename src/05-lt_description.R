@@ -314,6 +314,7 @@ saveRDS(dat$lt_input_85, file = glue('{wd}/out/lt_input_85.rds'))
 
 # save the all cause life tables
 saveRDS(dat$lt_85, file = glue('{wd}/out/lt_output_85.rds'))
+saveRDS(dat$lt_100, file = glue('{wd}/out/lt_output_100.rds'))
 
 # save e0, e60 change
 fig_spec$ExportFigure(fig$ex_change, path = cnst$path_out)

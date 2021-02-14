@@ -40,7 +40,7 @@ write_rds(ids, glue('{wd}/out/ids.rds'))
 # dataset for figures 1 and 2 ---------------------------------------------
 
 # get the lt estimates
-df_lt <- read_rds("{wd}/out/lt_output.rds" %>% glue)
+df_lt <- read_rds("{wd}/out/lt_output_85.rds" %>% glue)
 
 ex_diff <- df_lt %>%
     transmute(
@@ -113,7 +113,10 @@ df_dec_age <- df_dec$decomposition_results_by_age %>%
     left_join(ids) %>%
     left_join(rank_d0m20) %>%
     drop_na(name) %>%
-    mutate(name = fct_reorder(name, rank_d0m20))
+    mutate(
+        name = fct_reorder(name, rank_d0m20),
+        period = period %>% fct_rev
+    )
 
 write_rds(df_dec_age, "{wd}/out/df_dec_age.rds" %>% glue)
 
@@ -136,6 +139,9 @@ df_dec_age_cause <- df_dec$decomposition_results_by_age_cause %>%
     left_join(ids) %>%
     left_join(rank_d0m20) %>%
     drop_na(name) %>%
-    mutate(name = fct_reorder(name, rank_d0m20))
+    mutate(
+        name = fct_reorder(name, rank_d0m20),
+        period_cause = period_cause %>% fct_rev
+    )
 
 write_rds(df_dec_age_cause, "{wd}/out/df_dec_age_cause.rds" %>% glue)
