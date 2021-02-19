@@ -11,7 +11,7 @@ library(glue)
 library(fs)
 
 
-# hmd life tables ---------------------------------------------------------
+# hmd life tables and deaths  ----------------------------------------------
 
 # !!! The code below assumes that one has full HMD downloaded and unpacked locally. To get a copy of it go to
 # https://www.mortality.org/cgi-bin/hmd/hmd_download.php

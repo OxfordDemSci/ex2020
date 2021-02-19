@@ -33,9 +33,24 @@ ids <- tibble(
             code=="GB-NIR" ~ "Northern Ireland",
             TRUE ~ name
         )
+    ) %>%
+    # add HMD codes
+    mutate(
+        code_hmd = name %>%
+            countrycode(origin = "country.name", destination = "iso3c")
+    ) %>%
+    mutate(
+        code_hmd = case_when(
+            code=="DE" ~ "DEUTNP",
+            code=="FR" ~ "FRATNP",
+            code=="GB-EAW" ~ "GBRTENW",
+            code=="GB-NIR" ~ "GBR_NIR",
+            code=="GB-SCT" ~ "GBR_SCO",
+            TRUE ~ code_hmd
+        )
     )
 
-write_rds(ids, glue('{wd}/out/ids.rds'))
+saveRDS(ids, glue('{wd}/out/ids.rds'))
 
 
 # dataset for figures 1 and 2 ---------------------------------------------
