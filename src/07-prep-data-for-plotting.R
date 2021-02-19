@@ -17,7 +17,8 @@ cntr <- c(
     'AT', 'BE', 'BG', 'CH', 'CL', 'CZ',
     'DE', 'DK', 'EE', 'ES', 'FI', 'FR',
     'GB-EAW', 'GB-NIR', 'GB-SCT', 'HU',
-    'IL', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI'
+    'IL', 'LT', 'NL', 'PL', 'PT', 'SE',
+    'SI', 'US'
 )
 
 ids <- tibble(
