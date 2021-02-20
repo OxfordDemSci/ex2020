@@ -18,10 +18,38 @@ cnst <- within(cnst, {
   )
   path_out = glue('{wd}/out')
   path_tmp = glue('{wd}/tmp')
+  # number of Poisson life-table replicates
+  n_sim = 100
 })
 
 dat <- list()
 fig <- list()
+
+# Function --------------------------------------------------------
+
+source(glue('{wd}/cfg/fig_specs.R'))
+
+# simple piecewise-exponential life-table
+CalculateLifeTable <-
+  function (df, x, nx, Dx, Ex) {
+    
+    require(dplyr)
+    
+    df %>%
+      transmute(
+        x = {{x}},
+        nx = {{nx}},
+        mx = {{Dx}}/{{Ex}},
+        px = exp(-mx*{{nx}}),
+        qx = 1-px,
+        lx = head(cumprod(c(1, px)), -1),
+        dx = c(-diff(lx), tail(lx, 1)),
+        Lx = ifelse(mx==0, lx*nx, dx/mx),
+        Tx = rev(cumsum(rev(Lx))),
+        ex = Tx/lx
+      )
+    
+  }
 
 # Data ------------------------------------------------------------
 
@@ -60,31 +88,20 @@ dat$lt_input_100_sub <-
   dat$lt_input_100 %>%
   filter(region_iso %in% cnst$regions_for_analysis)
 
-# Function --------------------------------------------------------
+# Create Poisson life-table replicates ----------------------------
 
-source(glue('{wd}/cfg/fig_specs.R'))
-
-# simple piecewise-exponential life-table
-CalculateLifeTable <-
-  function (df, x, nx, Dx, Ex) {
-
-    require(dplyr)
-
-    df %>%
-    transmute(
-      x = {{x}},
-      nx = {{nx}},
-      mx = {{Dx}}/{{Ex}},
-      px = exp(-mx*{{nx}}),
-      qx = 1-px,
-      lx = head(cumprod(c(1, px)), -1),
-      dx = c(-diff(lx), tail(lx, 1)),
-      Lx = ifelse(mx==0, lx*nx, dx/mx),
-      Tx = rev(cumsum(rev(Lx))),
-      ex = Tx/lx
-    )
-
-  }
+dat$lt_85_sim <-
+  dat$lt_input_85_sub %>%
+  filter(year >= 2019) %>%
+  expand_grid(id_sim = 1:cnst$n_sim) %>%
+  group_by(region_iso, sex, year, age_start) %>%
+  mutate(death_total_sim = rpois(cnst$n_sim, death_total)) %>%
+  arrange(region_iso, sex, year, age_start) %>%
+  group_by(id_sim, region_iso, sex, year) %>%
+  group_modify(~{
+    CalculateLifeTable(.x, age_start, age_width, death_total_sim, population_py)
+  }) %>%
+  ungroup()
 
 # Calculate annual life tables ------------------------------------
 
@@ -195,7 +212,6 @@ fig$ex_change
 # compare hazards
 fig$hx_change <-
   dat$lt_annual_change %>%
-  filter(x >= 60) %>%
   ggplot(aes(x = x, color = sex)) +
   geom_line(aes(y = mx_2020), size = 0.3) +
   geom_line(aes(y = mx_2019), linetype = 6, size = 0.3) +
@@ -204,36 +220,9 @@ fig$hx_change <-
   scale_color_manual(values = fig_spec$sex_colors) +
   fig_spec$MyGGplotTheme(panel_border = TRUE, scaler = 0.8) +
   labs(x = 'Age', y = 'Deaths per person-year of exposure',
-       title = 'Hazard rates ages 60+ 2020 compared with 2019 (dashed)')
-
-# compare densities
-dat$lt_85 %>%
-  filter(sex == 'Male') %>%
-  mutate(is2020 = ifelse(year == 2020, TRUE, FALSE)) %>%
-  ggplot(aes(x = x, group = year, color = is2020)) +
-  geom_line(aes(y = dx)) +
-  facet_wrap(~region_iso) +
-  scale_color_manual(values = c(`TRUE` = 'red', `FALSE` = 'grey')) +
-  fig_spec$MyGGplotTheme(panel_border = TRUE) +
-  labs(x = 'Age', y = 'density',
-       title = 'Male densities of death 2020 (red) compared with previous years (grey)')
+       title = 'Hazard rates 2020 compared with 2019 (dashed)')
 
 # Analyze mx change -----------------------------------------------
-
-cnst$n_sim <- 10
-
-dat$lt_85_sim <-
-  dat$lt_input_85_sub %>%
-  filter(year >= 2019) %>%
-  expand_grid(id_sim = 1:cnst$n_sim) %>%
-  group_by(region_iso, sex, year, age_start) %>%
-  mutate(death_total_sim = rpois(cnst$n_sim, death_total)) %>%
-  arrange(region_iso, sex, year, age_start) %>%
-  group_by(id_sim, region_iso, sex, year) %>%
-  group_modify(~{
-    CalculateLifeTable(.x, age_start, age_width, death_total_sim, population_py)
-  }) %>%
-  ungroup()
 
 dat$mx_change <-
   dat$lt_85_sim %>%
@@ -264,6 +253,7 @@ fig$mx_change <-
   ), fatten = 1, position = position_dodge(width = 0.5)) +
   scale_y_log10(breaks = c(0.8, 0.9, 1, 1.1, 1.2),
                 labels = c('.8', '.9', '1', '1.1', '1.2')) +
+  scale_color_manual(values = fig_spec$sex_colors) +
   facet_wrap(~region_iso) +
   fig_spec$MyGGplotTheme(scaler = 0.8, panel_border = TRUE) +
   coord_flip() +
