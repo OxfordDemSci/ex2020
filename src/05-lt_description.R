@@ -65,13 +65,13 @@ dat$lt_input_85 <-
     input_sorted <- arrange(.x, age_start)
     lt85 <- filter(input_sorted, age_start <= 85)
     lt85p <- filter(input_sorted, age_start > 85)
-    
+
     lt85[nrow(lt85), 'age_width'] <- Inf
     lt85[nrow(lt85), 'death_total'] <- sum(lt85p$death_total)
     lt85[nrow(lt85), 'population_midyear'] <- sum(lt85p$population_midyear)
     lt85[nrow(lt85), 'population_py'] <- sum(lt85p$population_py)
     lt85[nrow(lt85), 'death_covid'] <- sum(lt85p$death_covid)
-    
+
     return(lt85)
   }) %>%
   ungroup() %>%
@@ -303,7 +303,8 @@ fig$e60_consistency_check
 saveRDS(dat$lt_input_85, file = glue('{wd}/out/lt_input_85.rds'))
 
 # save the all cause life tables
-saveRDS(dat$lt, file = glue('{wd}/out/lt_output_85.rds'))
+saveRDS(dat$lt_85, file = glue('{wd}/out/lt_output_85.rds'))
+saveRDS(dat$lt_100, file = glue('{wd}/out/lt_output_100.rds'))
 
 # save e0, e60 change
 fig_spec$ExportFigure(fig$ex_change, path = cnst$path_out)

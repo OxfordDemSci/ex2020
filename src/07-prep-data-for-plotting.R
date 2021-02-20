@@ -17,7 +17,8 @@ cntr <- c(
     'AT', 'BE', 'BG', 'CH', 'CL', 'CZ',
     'DE', 'DK', 'EE', 'ES', 'FI', 'FR',
     'GB-EAW', 'GB-NIR', 'GB-SCT', 'HU',
-    'IL', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI'
+    'IL', 'LT', 'NL', 'PL', 'PT', 'SE',
+    'SI', 'US'
 )
 
 ids <- tibble(
@@ -32,15 +33,30 @@ ids <- tibble(
             code=="GB-NIR" ~ "Northern Ireland",
             TRUE ~ name
         )
+    ) %>%
+    # add HMD codes
+    mutate(
+        code_hmd = name %>%
+            countrycode(origin = "country.name", destination = "iso3c")
+    ) %>%
+    mutate(
+        code_hmd = case_when(
+            code=="DE" ~ "DEUTNP",
+            code=="FR" ~ "FRATNP",
+            code=="GB-EAW" ~ "GBRTENW",
+            code=="GB-NIR" ~ "GBR_NIR",
+            code=="GB-SCT" ~ "GBR_SCO",
+            TRUE ~ code_hmd
+        )
     )
 
-write_rds(ids, glue('{wd}/out/ids.rds'))
+saveRDS(ids, glue('{wd}/out/ids.rds'))
 
 
 # dataset for figures 1 and 2 ---------------------------------------------
 
 # get the lt estimates
-df_lt <- read_rds("{wd}/out/lt_output.rds" %>% glue)
+df_lt <- read_rds("{wd}/out/lt_output_85.rds" %>% glue)
 
 ex_diff <- df_lt %>%
     transmute(
@@ -113,7 +129,10 @@ df_dec_age <- df_dec$decomposition_results_by_age %>%
     left_join(ids) %>%
     left_join(rank_d0m20) %>%
     drop_na(name) %>%
-    mutate(name = fct_reorder(name, rank_d0m20))
+    mutate(
+        name = fct_reorder(name, rank_d0m20),
+        period = period %>% fct_rev
+    )
 
 write_rds(df_dec_age, "{wd}/out/df_dec_age.rds" %>% glue)
 
@@ -136,6 +155,9 @@ df_dec_age_cause <- df_dec$decomposition_results_by_age_cause %>%
     left_join(ids) %>%
     left_join(rank_d0m20) %>%
     drop_na(name) %>%
-    mutate(name = fct_reorder(name, rank_d0m20))
+    mutate(
+        name = fct_reorder(name, rank_d0m20),
+        period_cause = period_cause %>% fct_rev
+    )
 
 write_rds(df_dec_age_cause, "{wd}/out/df_dec_age_cause.rds" %>% glue)
