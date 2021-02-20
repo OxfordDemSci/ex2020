@@ -12,7 +12,7 @@ wd <- here()
 cnst <- list()
 cnst <- within(cnst, {
   regions_for_analysis = c(
-    'AT', 'BE', 'BG', 'CH', 'CL', 'CZ', 'DE', 'DK',
+    'AT', 'BE', 'BG', 'CL', 'CZ', 'DE', 'DK',
     'EE', 'ES', 'FI', 'FR', 'GB-EAW', 'GB-NIR', 'GB-SCT',
     'HU', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI', 'US'
   )
@@ -221,6 +221,7 @@ fig$hx_change <-
   fig_spec$MyGGplotTheme(panel_border = TRUE, scaler = 0.8) +
   labs(x = 'Age', y = 'Deaths per person-year of exposure',
        title = 'Hazard rates 2020 compared with 2019 (dashed)')
+fig$hx_change
 
 # Analyze mx change -----------------------------------------------
 
@@ -251,8 +252,8 @@ fig$mx_change <-
     y = mean_diff,ymin = q025_diff, ymax = q975_diff,
     alpha = sig_elevated
   ), fatten = 1, position = position_dodge(width = 0.5)) +
-  scale_y_log10(breaks = c(0.8, 0.9, 1, 1.1, 1.2),
-                labels = c('.8', '.9', '1', '1.1', '1.2')) +
+  scale_y_log10(breaks = c(0.8, 1, 1.2),
+                labels = c('.8', '1', '1.2')) +
   scale_color_manual(values = fig_spec$sex_colors) +
   facet_wrap(~region_iso) +
   fig_spec$MyGGplotTheme(scaler = 0.8, panel_border = TRUE) +
@@ -263,6 +264,7 @@ fig$mx_change <-
     subtitle = '95% CIs via Poisson simulation of raw death counts',
     x = 'Age group', y = 'Ratio 2020 to 2019'
   )
+fig$mx_change
 
 # Compare our ex estimates with wpp estimates ---------------------
 

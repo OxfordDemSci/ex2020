@@ -35,7 +35,6 @@ library(yaml); library(readr)
 library(dplyr); library(purrr); library(tidyr); library(stringr)
 library(ggplot2)
 library(ungroup)
-library(foreach); library(doParallel)
 
 dat <- list()
 fig <- list()
@@ -85,19 +84,11 @@ cnst <- within(cnst, {
     c(M = config$skeleton$sex$Male, F = config$skeleton$sex$Female)
   # pclm life-table closeout age
   pclm_highest_age = 110
-  # number of cores to run pclm on
-  n_cores = 4
 })
 
 # Functions -------------------------------------------------------
 
 source(cnst$path_global)
-
-# Register cluster ------------------------------------------------
-
-# register cluster for parallel processing
-cl <- makeCluster(cnst$n_cores, outfile = cnst$path_pclm_log)
-registerDoParallel(cl)
 
 # Load data -------------------------------------------------------
 
@@ -155,11 +146,6 @@ dat$stmf_harmonized_01 <-
 
 # 02 STMF ungroup ages --------------------------------------------
 
-# now that we have a good idea what is missing within each year so we
-# can just sum death counts over weeks using sum(na.rm=TRUE) without
-# needing to worry about keeping track of missing deaths. here's what's
-# happening next:
-
 # (1) within each region-sex-year-week stratum, check what kind of
 # age grouping pattern is used and give it a unique label
 # (2) within each region-sex-year stratum, disregard the weeks and
@@ -185,66 +171,79 @@ dat$stmf_harmonized_01_ready_for_ungroup <-
   ) %>%
   ungroup()
 
-# This may take some time to run...
-
+# ungroup to single year of age
+# this may take some time to run...
 dat$stmf_harmonized_02 <-
-  foreach(
-    # prepare data for harmonization of age groups
-    # executed in parallel over regions
-    single_region = 
-      isplit(
-        dat$stmf_harmonized_01_ready_for_ungroup,
-        f = dat$stmf_harmonized_01_ready_for_ungroup$region_iso
-      ),  
-    .packages = c('dplyr', 'tidyr', 'ungroup'),
-    .export = c('cnst')
-  ) %dopar% {suppressPackageStartupMessages({
-    
-    single_region_ungrouped_deaths <-
-      single_region[['value']] %>%
-      group_by(region_iso, sex, iso_year, agegroup_pattern) %>%
-      group_modify(~{
-        cat('PCLM on', .y$region_iso, .y$sex, .y$iso_year, .y$agegroup_pattern, '\n')
-        
-        # number of age groups
-        n_agegroups_raw <- length(.x$death)
-        # any NA's in age-specific death counts or age strata?
-        anyna = any(is.na(.x$death) | is.na(.x$age_start))
-        # width of the last age group
-        nlast <- cnst$pclm_highest_age-tail(.x$age_start, 1)+1
-        
-        if (!anyna) {
-          
-          fit_pclm <- pclm(
-            x = .x$age_start, y = .x$death, nlast = nlast, out.step = 1
-          )
-          single_age_death <- round(fitted.values(fit_pclm), 1)
-          pclm_lambda <- fit_pclm$smoothPar[1]
-          
-        } else {
-          single_age_death <- NA
-          pclm_lambda <- NA
-        }
-        
-        ungrouped_deaths <- tibble(
+  dat$stmf_harmonized_01_ready_for_ungroup %>%
+  group_by(region_iso, sex, iso_year, agegroup_pattern) %>%
+  group_modify(~{
+    cat('Try PCLM on', .y$region_iso, .y$sex, .y$iso_year, .y$agegroup_pattern, Sys.time(), '\n')
+    # ungroup deaths via PCLM in specific country, sex, year and
+    # age grouping pattern; catch any errors
+    ungrouped_deaths <- tryCatch({
+      
+      # number of age groups
+      n_agegroups_raw <- length(.x$death)
+      # any explicit NA's in age-specific death counts or age strata?
+      anyna1 = any(is.na(.x$death) | is.na(.x$age_start))
+      # any implicit NA's in age-specific death counts?
+      anyna2 = any(head(.x$age_start + .x$age_width, -1) != .x$age_start[-1])
+      # width of the last age group
+      nlast <- cnst$pclm_highest_age-tail(.x$age_start, 1)+1
+      
+      # if there are any NA's in the input series of death counts
+      # return NA results with a corresponding error message...
+      if (anyna1 | anyna2) {
+        cat('Error: NA in', .y$region_iso, .y$sex, .y$iso_year, .y$agegroup_pattern, '\n')
+        # NA return
+        tibble(
           age = 0:cnst$pclm_highest_age,
-          death = single_age_death,
-          lambda = pclm_lambda
+          death = as.numeric(NA),
+          lambda = as.numeric(NA),
+          error = TRUE,
+          message = 'NAs in age-specific death counts'
         )
-        
-        return(ungrouped_deaths)
-      }) %>%
-      ungroup()
+        # ... otherwise apply pclm ungrouping
+      } else {
+        fit_pclm <- pclm(
+          x = .x$age_start, y = .x$death, nlast = nlast, out.step = 1
+        )
+        # PCLM return
+        tibble(
+          age = 0:cnst$pclm_highest_age,
+          death = round(fitted.values(fit_pclm), 1),
+          lambda = fit_pclm$smoothPar[1],
+          error = FALSE,
+          message = as.character(NA)
+        )
+      }
+      
+    },
     
-    return(single_region_ungrouped_deaths)
+    # any unexpected errors are trapped here
+    error = function(e) {
+      cat('Error: Exception in ', .y$region_iso, .y$sex, .y$iso_year, .y$agegroup_pattern, geterrmessage(), '\n')
+      # error return
+      tibble(
+        age = 0:cnst$pclm_highest_age,
+        death = as.numeric(NA),
+        lambda = as.numeric(NA),
+        error = TRUE,
+        message = geterrmessage()
+      )
+    })# End of tryCatch()
     
-  })}
-
-stopCluster(cl)
-
-dat$stmf_harmonized_02 <- bind_rows(dat$stmf_harmonized_02)
+    return(ungrouped_deaths)
+    
+  }) %>% # End of group_modify() looping over sex, age, year, grouping pattern
+  ungroup()
 
 # 03 STMF aggregate into years ------------------------------------
+
+# we keep track of missing weeks in a later stage of the analysis.
+# therefore we can safely sum death counts over weeks using
+# sum(na.rm=TRUE) without needing to worry about keeping track of
+# missing deaths.
 
 # aggregate over unique age groupings within a year into years
 dat$stmf_harmonized_03 <-
