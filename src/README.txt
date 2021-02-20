@@ -37,7 +37,7 @@
   - data already in single ages
   - ages 100:105+ are summed into 100+ to be consistent with mid-year population information
 - CDC:
-  - data already in age grouping 0:100+
+  - The CDC data comes in single ages 0:100 for the US. For 2020 we only have the STMF data in a much coarser age grouping, i.e. (0, 1, 5, 15, 25, 35, 45, 55, 65, 75, 85+). In order to calculate life-tables in a manner consistent with 2020, we summarise the pre 2020 US death counts into the 2020 age grouping and then apply the pclm ungrouping into single year ages, mirroring the approach to the 2020 data
 
 ## Population
 

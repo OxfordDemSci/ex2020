@@ -482,6 +482,14 @@ dat$ons_ready_for_join <-
 
 # CDC harmonize data ----------------------------------------------
 
+# The CDC data comes in single ages 0:100 for the US. For 2020 we only
+# have the STMF data in a much coarser age grouping. In order to
+# calculate life-tables in a manner consistent with 2020, we summarise
+# the pre 2020 US death counts into the 2020 age grouping and then apply
+# the pclm ungrouping to single ages, mirroring the approach to the 2020
+# data.
+
+age_start_2020 = c(0, 1, 5, 15, 25, 35, 45, 55, 65, 75, 85)
 dat$cdc_ready_for_join <-
   dat$cdc %>%
   select(
@@ -499,11 +507,43 @@ dat$cdc_ready_for_join <-
       TRUE ~ as.numeric(stringr::str_extract(age_start, '^[[:digit:]]+'))
     )
   ) %>%
+  # for each year-sex, for consistency reasons,
+  # aggregate death counts into 2020
+  # grouping and ungroup to single ages
+  group_by(year, sex) %>%
+  group_modify(~{
+    
+    # group to 2020 scheme
+    deaths_aggregated_2020 <- aggregate(
+      x = .x$death_total,
+      by = list(cut(.x$age_start, c(age_start_2020,Inf), right = FALSE)),
+      FUN = sum
+    )[['x']]
+    
+    # number of age groups
+    n_agegroups_raw <- length(deaths_aggregated_2020)
+    # width of the last age group
+    nlast <- cnst$pclm_highest_age-tail(age_start_2020, 1)+1
+    
+    # pclm
+    fit_pclm <- pclm(
+      x = age_start_2020, y = deaths_aggregated_2020,
+      nlast = nlast, out.step = 1
+    )
+    # PCLM return
+    tibble(
+      age_start = 0:cnst$pclm_highest_age,
+      death_total = round(fitted.values(fit_pclm), 1),
+      lambda = fit_pclm$smoothPar[1]
+    )
+    
+  }) %>%
+  ungroup() %>%
   # add data quality indicators
   mutate(
     death_total_nweeksmiss = 0,
-    death_total_minnageraw = 101,
-    death_total_q90nageraw = 101
+    death_total_minnageraw = as.numeric(length(age_start_2020)),
+    death_total_q90nageraw = as.numeric(length(age_start_2020))
   ) %>%
   # add id
   mutate(
