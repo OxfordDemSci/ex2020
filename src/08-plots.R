@@ -19,8 +19,15 @@ df_ex <- read_rds("{wd}/out/df_ex.rds" %>% glue)
 # figrue 1 -- absolute levels of life expectancy --------------------------
 
 df_ex %>%
-    mutate(name = fct_reorder(name, rank_e0f19)) %>%
-    filter(age %in% c(0, 60, 80)) %>%
+    mutate(
+        name = name %>%
+            # asterix for Germany and Chile
+            str_replace("Chile", "Chile*") %>%
+            str_replace("Germany", "Germany*") %>%
+            as_factor() %>%
+            fct_reorder(rank_e0f19)
+    ) %>%
+    filter(age %in% c(0, 60)) %>%
     drop_na(name) %>%
     transmute(
         name, sex, age,
@@ -32,7 +39,7 @@ df_ex %>%
     ) %>%
     mutate(age = age %>% as_factor()) %>%
     ggplot(aes(ex, name, color = sex, shape = year, size = year))+
-    geom_hline(yintercept = seq(2, 22, 2), size = 5, color = "#eaeaea")+
+    geom_hline(yintercept = seq(2, 26, 2), size = 5, color = "#eaeaea")+
     geom_point()+
     scale_shape_manual(values = c(124, 43, 16))+
     scale_size_manual(values = c(4, 4, 1.5))+
@@ -56,18 +63,25 @@ df_ex %>%
 
 one <- last_plot()
 ggsave("{wd}/out/fig-1.pdf" %>% glue, one,
-       width = 9, height = 4, device = cairo_pdf)
+       width = 7, height = 4, device = cairo_pdf)
 
 
 
 # figure 2 -- changes in life expectancy ----------------------------------
 
 df_ex %>%
-    filter(age %in% c(0, 60, 80)) %>%
+    filter(age %in% c(0, 60)) %>%
     drop_na(name) %>%
-    mutate(name = fct_reorder(name, rank_d0m20)) %>%
+    mutate(
+        name = name %>%
+            # asterix for Germany and Chile
+            str_replace("Chile", "Chile*") %>%
+            str_replace("Germany", "Germany*") %>%
+            as_factor() %>%
+            fct_reorder(rank_d0m20)
+    ) %>%
     ggplot(aes(y = name))+
-    geom_hline(yintercept = seq(2, 22, 2), size = 5, color = "#eaeaea")+
+    geom_hline(yintercept = seq(2, 26, 2), size = 5, color = "#eaeaea")+
     geom_vline(xintercept = 0, size = 2, color = "#bababa")+
     geom_point(aes(x = ex_diff, color = sex, shape = sex), size = 2)+
     scale_color_manual(values = c("#B5223BFF", "#64B6EEFF"))+
@@ -103,7 +117,7 @@ df_ex %>%
     )
 
 two <- last_plot()
-ggsave("{wd}/out/fig-2.pdf" %>% glue, two, width = 9, height = 4, device = cairo_pdf)
+ggsave("{wd}/out/fig-2.pdf" %>% glue, two, width = 7, height = 4, device = cairo_pdf)
 
 
 
