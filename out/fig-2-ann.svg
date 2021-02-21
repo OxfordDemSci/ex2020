@@ -34,7 +34,11 @@
   </metadata>
 
   <defs
-   id="defs2991">
+   id="defs2991"><inkscape:path-effect
+   is_visible="true"
+   id="path-effect12933"
+   effect="spiro" />
+
     <inkscape:path-effect
    effect="spiro"
    id="path-effect5490"
@@ -876,6 +880,14 @@
    is_visible="true"
    id="path-effect5490-3"
    effect="spiro" />
+<inkscape:path-effect
+   effect="spiro"
+   id="path-effect5482-6-5"
+   is_visible="true" />
+<inkscape:path-effect
+   effect="spiro"
+   id="path-effect5486-1-8"
+   is_visible="true" />
 </defs>
 
   <sodipodi:namedview
@@ -892,9 +904,9 @@
    inkscape:window-height="855"
    id="namedview2989"
    showgrid="false"
-   inkscape:zoom="0.5721175"
-   inkscape:cx="385.38081"
-   inkscape:cy="-32.695533"
+   inkscape:zoom="1.6956312"
+   inkscape:cx="224.65112"
+   inkscape:cy="118.13719"
    inkscape:window-x="50"
    inkscape:window-y="23"
    inkscape:window-maximized="0"
@@ -3642,32 +3654,32 @@
    xml:space="preserve"
    style="font-size:28px;line-height:0.9;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab';word-spacing:0px;fill:#666666;stroke-width:0.75"
    x="-9.9034567"
-   y="183.19469"
+   y="156.94469"
    id="text2451-9"><tspan
      sodipodi:role="line"
      id="tspan2449-43"
      x="-9.9034567"
-     y="183.19469"
+     y="156.94469"
      style="font-weight:bold;font-size:24px;fill:#666666;stroke-width:0.75">Age </tspan><tspan
      sodipodi:role="line"
      x="-9.9034567"
-     y="208.39468"
+     y="182.14468"
      style="font-weight:bold;font-size:24px;fill:#666666;stroke-width:0.75"
      id="tspan2493-8">0</tspan></text>
 <text
    transform="scale(1,-1)"
    id="text2451-6-6"
-   y="183.19469"
+   y="156.94469"
    x="177.59654"
    style="font-size:28px;line-height:0.9;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab';word-spacing:0px;fill:#666666;stroke-width:0.75"
    xml:space="preserve"><tspan
      style="font-weight:bold;font-size:24px;fill:#666666;stroke-width:0.75"
-     y="183.19469"
+     y="156.94469"
      x="177.59654"
      id="tspan2449-4-8"
      sodipodi:role="line">Age </tspan><tspan
      style="font-weight:bold;font-size:24px;fill:#666666;stroke-width:0.75"
-     y="208.39468"
+     y="182.14468"
      x="177.59654"
      sodipodi:role="line"
      id="tspan2491-6">60</tspan></text>
@@ -3695,82 +3707,80 @@
      x="16.308458"
      id="tspan2499-6-9"
      sodipodi:role="line">females</tspan></text>
-<g
+<text
+   transform="scale(1,-1)"
+   id="text5426-9"
+   y="100.2728"
+   x="-20.901503"
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;line-height:0.9;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;word-spacing:0px;opacity:1;fill:#666666;stroke-width:0.75;stop-opacity:1"
+   xml:space="preserve"><tspan
+     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;stroke-width:0.75"
+     y="100.2728"
+     x="-20.901503"
+     id="tspan5424-4"
+     sodipodi:role="line">Change</tspan><tspan
+     id="tspan5428-0"
+     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;stroke-width:0.75"
+     y="111.07279"
+     x="-20.901503"
+     sodipodi:role="line">in 2020</tspan></text>
+<text
+   transform="scale(1,-1)"
+   xml:space="preserve"
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;line-height:0.9;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;word-spacing:0px;opacity:1;fill:#666666;stroke-width:0.75;stop-opacity:1"
+   x="57.836777"
+   y="100.2728"
+   id="text5426-7-8"><tspan
+     sodipodi:role="line"
+     id="tspan5424-7-0"
+     x="57.836777"
+     y="100.2728"
+     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;stroke-width:0.75">Average yearly</tspan><tspan
+     sodipodi:role="line"
+     x="57.836777"
+     y="111.07279"
+     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;stroke-width:0.75"
+     id="tspan5428-8-5">change in 2015–19</tspan></text>
+<text
+   transform="scale(1,-1)"
+   id="text5426-7-3-7"
+   y="100.2728"
+   x="181.5985"
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;line-height:0.9;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;word-spacing:0px;opacity:1;fill:#666666;stroke-width:0.75;stop-opacity:1"
+   xml:space="preserve"><tspan
+     id="tspan5428-8-7-3"
+     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;stroke-width:0.75"
+     y="100.2728"
+     x="181.5985"
+     sodipodi:role="line">Total change </tspan><tspan
+     id="tspan5478-8"
+     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;stroke-width:0.75"
+     y="111.07279"
+     x="181.5985"
+     sodipodi:role="line">in 2015–19</tspan></text>
+<path
+   transform="matrix(-0.93338778,0,0,-0.93338778,98.127751,121.71486)"
+   inkscape:connector-curvature="0"
+   id="path5480-3"
+   d="M 15.104688,292.44257 C 19.224837,280.19025 27.063698,269.21584 37.317463,261.34468 50.093932,251.537 66.57963,246.68826 82.631522,248.01701"
+   style="opacity:1;fill:none;stroke:#666666;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-opacity:1"
+   inkscape:original-d="m 15.104688,292.44257 c 7.701178,-10.36672 14.809267,-20.73268 22.212775,-31.09789 7.403508,-10.36521 30.210125,-8.88586 45.314059,-13.32767"
+   inkscape:path-effect="#path-effect5482-6" />
+<path
    transform="translate(-28.172987,-409.13218)"
-   id="g10539-4">
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;line-height:0.9;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;word-spacing:0px;fill:#666666;stroke-width:0.75"
-     x="7.2714844"
-     y="-308.85938"
-     id="text5426-9"
-     transform="scale(1,-1)"><tspan
-       sodipodi:role="line"
-       id="tspan5424-4"
-       x="7.2714844"
-       y="-308.85938"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;stroke-width:0.75">Change</tspan><tspan
-       sodipodi:role="line"
-       x="7.2714844"
-       y="-298.05939"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;stroke-width:0.75"
-       id="tspan5428-0">in 2020</tspan></text>
-  <text
-     id="text5426-7-8"
-     y="-308.85938"
-     x="86.009766"
-     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;line-height:0.9;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;word-spacing:0px;fill:#666666;stroke-width:0.75"
-     xml:space="preserve"
-     transform="scale(1,-1)"><tspan
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;stroke-width:0.75"
-       y="-308.85938"
-       x="86.009766"
-       id="tspan5424-7-0"
-       sodipodi:role="line">Average yearly</tspan><tspan
-       id="tspan5428-8-5"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;stroke-width:0.75"
-       y="-298.05939"
-       x="86.009766"
-       sodipodi:role="line">change in 2015–19</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;line-height:0.9;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;word-spacing:0px;fill:#666666;stroke-width:0.75"
-     x="209.77148"
-     y="-308.85938"
-     id="text5426-7-3-7"
-     transform="scale(1,-1)"><tspan
-       sodipodi:role="line"
-       x="209.77148"
-       y="-308.85938"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;stroke-width:0.75"
-       id="tspan5428-8-7-3">Total change </tspan><tspan
-       sodipodi:role="line"
-       x="209.77148"
-       y="-298.05939"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;stroke-width:0.75"
-       id="tspan5478-8">in 2015–19</tspan></text>
-  <path
-     inkscape:path-effect="#path-effect5482-6"
-     inkscape:original-d="m 15.104688,292.44257 c 7.701178,-10.36672 14.809267,-20.73268 22.212775,-31.09789 7.403508,-10.36521 30.210125,-8.88586 45.314059,-13.32767"
-     style="fill:none;stroke:#666666;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-     d="M 15.104688,292.44257 C 19.224837,280.19025 27.063698,269.21584 37.317463,261.34468 50.093932,251.537 66.57963,246.68826 82.631522,248.01701"
-     id="path5480-3"
-     inkscape:connector-curvature="0" />
-  <path
-     inkscape:path-effect="#path-effect5486-1"
-     inkscape:original-d="m 134.16516,291.55405 c 1.48161,-6.51649 2.96246,-13.03224 4.44256,-19.54724 1.4801,-6.515 -4.73797,-15.40161 -7.10809,-23.10129"
-     style="fill:none;stroke:#666666;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-     d="m 134.16516,291.55405 c 2.99148,-6.04465 4.52756,-12.80339 4.44256,-19.54724 -0.10294,-8.16687 -2.60212,-16.2892 -7.10809,-23.10129"
-     id="path5484-1"
-     inkscape:connector-curvature="0" />
-  <path
-     inkscape:path-effect="#path-effect5490-3"
-     inkscape:original-d="m 235.45542,294.21959 c -9.18053,-10.95906 -18.36181,-21.91736 -27.54384,-32.87491 -9.18203,-10.95755 -20.73117,2.96095 -31.09788,4.44255"
-     style="fill:none;stroke:#666666;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-     d="m 235.45542,294.21959 c -0.78777,-7.54439 -3.87554,-14.83312 -8.74704,-20.64749 -4.8715,-5.81437 -11.50692,-10.13075 -18.7968,-12.22742 -10.36818,-2.98204 -21.97939,-1.32329 -31.09788,4.44255"
-     id="path5488-8"
-     inkscape:connector-curvature="0" />
-</g>
+   inkscape:connector-curvature="0"
+   id="path5484-1"
+   d="m 134.16516,291.55405 c 2.99148,-6.04465 4.52756,-12.80339 4.44256,-19.54724 -0.10294,-8.16687 -2.60212,-16.2892 -7.10809,-23.10129"
+   style="opacity:1;fill:none;stroke:#666666;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-opacity:1"
+   inkscape:original-d="m 134.16516,291.55405 c 1.48161,-6.51649 2.96246,-13.03224 4.44256,-19.54724 1.4801,-6.515 -4.73797,-15.40161 -7.10809,-23.10129"
+   inkscape:path-effect="#path-effect5486-1" />
+<path
+   inkscape:original-d="m 178.40659,-108.82471 c -7.22369,-4.71875 -14.74302,-9.43676 -22.11566,-14.15402 -7.37263,-4.71726 -10.31988,-13.27015 -15.48096,-19.90409"
+   inkscape:path-effect="#path-effect12933"
+   inkscape:connector-curvature="0"
+   id="path12931"
+   d="m 178.40659,-108.82471 c -8.11711,-3.38998 -15.63757,-8.20308 -22.11566,-14.15402 -6.21869,-5.71265 -11.47484,-12.47055 -15.48096,-19.90409"
+   style="fill:none;stroke:#666666;stroke-width:1.50000004;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none" />
 </g>
 
 </svg>
