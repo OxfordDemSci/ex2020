@@ -48,10 +48,10 @@ skeleton:
 ]
 regions_for_all_cause_analysis: [
     'AT',
-    'AU',
+    #'AU',
     'BE',
     'BG',
-    'CA',
+    #'CA',
     'CH',
     'CL',
     'CZ',
@@ -64,29 +64,26 @@ regions_for_all_cause_analysis: [
     'GB-EAW',
     'GB-NIR',
     'GB-SCT',
-    'GR',
-    'HR',
+    #'GR', # missing weeks
+    'HR', #
     'HU',
-    'IL',
-    'IS',
-    'IT',
-    'KR',
+    #'IL', # coarse age groups
+    'IS', #
+    #'IT', # missing weeks
+    #'KR', # coarse age group
     'LT',
-    'LU',
-    'LV',
+    #'LU', # adolescent hazard profiles in 2019 very different from 2020
+    #'LV', # adolescent hazard profiles in 2019 very different from 2020
     'NL',
-    'NO',
-    'NZ',
+    'NO', #
+    #'NZ', # coarse age groups
     'PL',
     'PT',
-    'RU',
+    #'RU', # missing year 2021
     'SE',
     'SI',
-    'SK',
-    'TW',
+    #'SK', # missing weeks
+    #'TW', # missing weeks
     'US'
-#    'AT', 'BE', 'BG', 'CH', 'CL', 'CZ', 'DE', 'DK',
-#    'EE', 'ES', 'FI', 'FR', 'GB-EAW', 'GB-NIR', 'GB-SCT',
-#    'HU', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI', 'US'
 ]
 

@@ -3,19 +3,16 @@
 # Init ------------------------------------------------------------
 
 library(here); library(glue)
-library(tidyverse)
+library(tidyverse); library(yaml)
 library(patchwork)
 
 # Constants -------------------------------------------------------
 
 wd <- here()
 cnst <- list()
+config <- read_yaml(glue('{wd}/cfg/config.yaml'))
 cnst <- within(cnst, {
-  regions_for_analysis = c(
-    'AT', 'BE', 'BG', 'CH', 'CL', 'CZ', 'DE', 'DK',
-    'EE', 'ES', 'FI', 'FR', 'GB-EAW', 'GB-NIR', 'GB-SCT',
-    'HU', 'LT', 'NL', 'PL', 'PT', 'SE', 'SI', 'US'
-  )
+  regions_for_analysis = config$regions_for_all_cause_analysis
   path_out = glue('{wd}/out')
   path_tmp = glue('{wd}/tmp')
   # number of Poisson life-table replicates
@@ -175,18 +172,28 @@ walk(c(0, 60), ~{
       region_iso = fct_reorder(region_iso, -ex_diff_2020)
     ) %>%
     ggplot(aes(x = region_iso, color = sex, fill = sex, group = sex)) +
+    geom_col(aes(y = 0)) + # workaround so tht geom_vline works with discrete scale
+    geom_vline(
+      xintercept = seq(2, length(cnst$regions_for_analysis), 2),
+      size = 3, color = '#eaeaea'
+    ) +
     geom_col(
       aes(y = ex_diff_2020),
       position = position_dodge(width = 0.6), width = 0.4
     ) +
     geom_point(
-      aes(x = region_iso, color = sex, y = ex_avgdiff_pre2020),
-      position = position_dodge(width = 0.6)
+      aes(x = region_iso, fill = sex, y = ex_avgdiff_pre2020),
+      position = position_dodge(width = 0.6), shape = 21,
+      color = 'white'
     ) +
     geom_hline(yintercept = 0) +
     coord_flip(ylim = c(-2, 1)) +
-    scale_color_manual(values = fig_spec$sex_colors) +
+    scale_y_continuous(
+      breaks = seq(-2, 2, 0.5),
+      labels = c('-2 years', '', '-1', '', '0', '', '+1', '', '+2 years gained')
+    ) +
     scale_fill_manual(values = fig_spec$sex_colors) +
+    scale_color_manual(values = fig_spec$sex_colors) +
     guides(
       color = guide_legend(reverse = TRUE),
       fill = guide_legend(reverse = TRUE)
@@ -196,12 +203,16 @@ walk(c(0, 60), ~{
       y = NULL,
       x = NULL
     ) +
-    fig_spec$MyGGplotTheme(grid = 'xy', scaler = 0.8) +
-    theme(legend.title = element_blank())
+    fig_spec$MyGGplotTheme(grid = 'x', scaler = 0.8, show_legend = FALSE)
 })
 
 fig$ex_change <-
-  fig$e0_change + fig$e60_change +
+  fig$e0_change +
+  annotate('text', x = 2, y = -1.5, label = 'Female', size = 3,
+           color = fig_spec$sex_colors['Female'], hjust = 1) +
+  annotate('text', x = 3, y = -1.5, label = 'Male', size = 3,
+           color = fig_spec$sex_colors['Male'], hjust = 1) +
+  fig$e60_change +
   plot_layout(guides = 'collect') +
   plot_annotation(
     title = 'Annual change in years of remaining life-expectancy 2019 to 2020',
