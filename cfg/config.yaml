@@ -48,10 +48,10 @@ skeleton:
 ]
 regions_for_all_cause_analysis: [
     'AT',
-    #'AU',
+    #'AU', coarse age groups, missing weeks
     'BE',
     'BG',
-    #'CA',
+    #'CA', coarse age groups, missing weeks
     'CH',
     'CL',
     'CZ',
