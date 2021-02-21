@@ -46,3 +46,44 @@ skeleton:
     'TW',
     'US'
 ]
+regions_for_all_cause_analysis: [
+    'AT',
+    #'AU',
+    'BE',
+    'BG',
+    #'CA',
+    'CH',
+    'CL',
+    'CZ',
+    'DE',
+    'DK',
+    'EE',
+    'ES',
+    'FI',
+    'FR',
+    'GB-EAW',
+    'GB-NIR',
+    'GB-SCT',
+    #'GR', # missing weeks
+    'HR', #
+    'HU',
+    #'IL', # coarse age groups
+    'IS', #
+    #'IT', # missing weeks
+    #'KR', # coarse age group
+    'LT',
+    #'LU', # adolescent hazard profiles in 2019 very different from 2020
+    #'LV', # adolescent hazard profiles in 2019 very different from 2020
+    'NL',
+    'NO', #
+    #'NZ', # coarse age groups
+    'PL',
+    'PT',
+    #'RU', # missing year 2021
+    'SE',
+    'SI',
+    #'SK', # missing weeks
+    #'TW', # missing weeks
+    'US'
+]
+

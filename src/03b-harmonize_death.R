@@ -284,6 +284,7 @@ dat$stmf_data_quality <-
   # - occurrence of any missing values in death count column, i.e.
   # missing deaths within any age groups
   # - number of age groups
+  # - age of open age group
   group_by(region_iso, sex, iso_year, iso_week) %>%
   summarise(
     # explicit missing deaths in any age
@@ -296,27 +297,31 @@ dat$stmf_data_quality <-
     any_missing_deaths_rsyw =
       any_explicit_missing_deaths_rsyw | any_implicit_missing_deaths_rsyw,
     # number of age groups
-    nageraw_rsyw = n() %>% as.numeric()
+    nageraw_rsyw = n() %>% as.numeric(),
+    openageraw = age_start[is.infinite(age_width)]
   ) %>%
   # for each year within a region-sex stratum determine
   # - number of weeks with complete death counts
   # - number of weeks with missing death counts
   # - minimum number of age groups
   # - q90 number of age groups
+  # - minimum age for open age group
   group_by(region_iso, sex, iso_year) %>%
   summarise(
     nweeks_year = ifelse(YearHasIsoWeek53(iso_year)[1], 53, 52),
     nweeks_complete_deaths = sum(!any_missing_deaths_rsyw),
     nweeks_missing_deaths = nweeks_year - nweeks_complete_deaths,
     minnageraw = min(nageraw_rsyw),
-    q90nageraw = quantile(nageraw_rsyw, probs = 0.9)
+    q90nageraw = quantile(nageraw_rsyw, probs = 0.9),
+    minopenageraw = min(openageraw)
   ) %>%
   ungroup() %>%
   select(
     region_iso, sex, year = iso_year,
     death_total_nweeksmiss = nweeks_missing_deaths,
     death_total_minnageraw = minnageraw,
-    death_total_q90nageraw = q90nageraw
+    death_total_q90nageraw = q90nageraw,
+    death_total_minopenageraw = minopenageraw
   )
 
 # join death counts with data base skeleton
@@ -351,7 +356,8 @@ dat$stmf_ready_for_join <-
     death_total_stmf = death_total,
     death_total_nweeksmiss_stmf = death_total_nweeksmiss,
     death_total_minnageraw_stmf = death_total_minnageraw,
-    death_total_q90nageraw_stmf = death_total_q90nageraw
+    death_total_q90nageraw_stmf = death_total_q90nageraw,
+    death_total_minopenageraw_stmf = death_total_minopenageraw
   )
 
 # STMF diagnostic plots -------------------------------------------
@@ -367,7 +373,7 @@ walk(unique(dat$stmf_harmonized_02$region_iso), ~{
     theme_minimal() +
     scale_x_continuous() +
     scale_color_manual(values = fig_spec$sex_colors) +
-    labs(subtitle = .x) +
+    labs(subtitle = glue('PCLM ungroup of death counts in {.x} (STMF)')) +
     fig_spec$MyGGplotTheme()
 })
 
@@ -392,7 +398,7 @@ fig$death_pclm <-
   guides(color = 'none', size = 'none') +
   fig_spec$MyGGplotTheme() +
   labs(
-    title = 'Ungrouped male death counts by age and country',
+    title = 'Ungrouped male death counts by age and country (STMF)',
     subtitle = 'Year 2020 is red, prior years grey',
     x = '',
     y = ''
@@ -406,7 +412,7 @@ fig$death_quality_q90nageraw <-
   scale_fill_manual(values = fig_spec$sex_colors) +
   fig_spec$MyGGplotTheme(panel_border = TRUE, grid = 'xy') +
   labs(
-    title = '90% of the weeks in a year feature at least this many age groups',
+    title = '90% of the weeks in a year feature at least this many age groups (STMF)',
     x = 'Year', y = 'Count'
   )
 
@@ -418,7 +424,19 @@ fig$death_quality_minnageraw <-
   scale_fill_manual(values = fig_spec$sex_colors) +
   fig_spec$MyGGplotTheme(panel_border = TRUE, grid = 'xy') +
   labs(
-    title = 'The weeks in a year feature at least this many age groups',
+    title = 'The weeks in a year feature at least this many age groups (STMF)',
+    x = 'Year', y = 'Count'
+  )
+
+fig$death_quality_minopenageraw <-
+  dat$stmf_data_quality %>%
+  ggplot(aes(x = year, y = death_total_minopenageraw, fill = sex, group = sex)) +
+  geom_col(position = 'dodge') +
+  facet_wrap(~region_iso) +
+  scale_fill_manual(values = fig_spec$sex_colors) +
+  fig_spec$MyGGplotTheme(panel_border = TRUE, grid = 'xy') +
+  labs(
+    title = 'The open age group in a year is at least this high (STMF)',
     x = 'Year', y = 'Count'
   )
 
@@ -432,9 +450,10 @@ fig$death_quality_nweeksmiss <-
   facet_wrap(~region_iso) +
   scale_x_continuous(breaks = 2015:2020) +
   scale_y_continuous(limits = c(0, 53)) +
+  scale_fill_manual(values = fig_spec$sex_colors) +
   fig_spec$MyGGplotTheme(panel_border = TRUE, grid = 'xy') +
   labs(
-    title = 'Number of weeks with at least one missing age-specific death count',
+    title = 'Number of weeks with at least one missing age-specific death count (STMF)',
     subtitle = 'Implicitly missing weeks and ages are counted as well',
     x = 'Year', y = 'Count'
   )
@@ -467,7 +486,8 @@ dat$ons_ready_for_join <-
   mutate(
     death_total_nweeksmiss = 0,
     death_total_minnageraw = 106,
-    death_total_q90nageraw = 106
+    death_total_q90nageraw = 106,
+    death_total_minopenageraw = 105
   ) %>%
   # add id
   mutate(
@@ -477,7 +497,8 @@ dat$ons_ready_for_join <-
     id, death_total_ons = death_total,
     death_total_nweeksmiss_ons = death_total_nweeksmiss,
     death_total_minnageraw_ons = death_total_minnageraw,
-    death_total_q90nageraw_ons = death_total_q90nageraw
+    death_total_q90nageraw_ons = death_total_q90nageraw,
+    death_total_minopenageraw_ons = death_total_minopenageraw
   )
 
 # CDC harmonize data ----------------------------------------------
@@ -543,7 +564,8 @@ dat$cdc_ready_for_join <-
   mutate(
     death_total_nweeksmiss = 0,
     death_total_minnageraw = as.numeric(length(age_start_2020)),
-    death_total_q90nageraw = as.numeric(length(age_start_2020))
+    death_total_q90nageraw = as.numeric(length(age_start_2020)),
+    death_total_minopenageraw = tail(age_start_2020, 1)
   ) %>%
   # add id
   mutate(
@@ -553,7 +575,8 @@ dat$cdc_ready_for_join <-
     id, death_total_cdc = death_total,
     death_total_nweeksmiss_cdc = death_total_nweeksmiss,
     death_total_minnageraw_cdc = death_total_minnageraw,
-    death_total_q90nageraw_cdc = death_total_q90nageraw
+    death_total_q90nageraw_cdc = death_total_q90nageraw,
+    death_total_minopenageraw_cdc = death_total_minopenageraw
   )
 
 # Final join ------------------------------------------------------
@@ -598,12 +621,18 @@ dat$death <-
       death_total_source == 'ons' ~ death_total_q90nageraw_ons,
       death_total_source == 'stmf' ~ death_total_q90nageraw_stmf,
       death_total_source == 'cdc' ~ death_total_q90nageraw_cdc
+    ),
+    death_total_minopenageraw = case_when(
+      death_total_source == 'ons' ~ death_total_minopenageraw_ons,
+      death_total_source == 'stmf' ~ death_total_minopenageraw_stmf,
+      death_total_source == 'cdc' ~ death_total_minopenageraw_cdc
     )
   ) %>%
   select(
     id, death_total,
     death_total_nweeksmiss, death_total_minnageraw,
-    death_total_q90nageraw, death_total_source
+    death_total_q90nageraw, death_total_minopenageraw,
+    death_total_source
   )
 
 # Export ----------------------------------------------------------

@@ -11,6 +11,7 @@
 - `death_total_nweeksmiss`: number of weeks in the raw input data with at least one missing death count for this region-sex-year stratum. missings are counted when the week is implicitly missing from the input data or if any NAs are encounted in this week or if age groups are implicitly missing for this week in the input data (e.g. 40-45, 50-55)
 - `death_total_minnageraw`: the minimum number of age-groups in the raw input data within this region-sex-year stratum
 - `death_total_q90nageraw`: 90% of the weeks in the raw input data within this region-sex-year stratum feature at least this many age groups
+- `death_total_minopenageraw`: the minimum age at the start of the open age group in the raw input data within this region-sex-year stratum
 - `death_total_source`: source of the all-cause death data
 - `population_midyear`: midyear population (July 1st)
 - `population_py`: person-years of exposure (adjusted for leap-weeks)
