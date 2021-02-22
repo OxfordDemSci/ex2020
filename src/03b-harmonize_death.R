@@ -314,7 +314,9 @@ dat$stmf_data_quality <-
   group_by(region_iso, sex, iso_year) %>%
   summarise(
     nweeks_year = ifelse(YearHasIsoWeek53(iso_year)[1], 53, 52),
-    nweeks_complete_deaths = sum(!any_missing_deaths_rsyw),
+    nweeks_complete_deaths =
+      # don't count week 0 which is reserved for deaths of unknown week
+      sum(!any_missing_deaths_rsyw[iso_week != 0]),
     nweeks_missing_deaths = nweeks_year - nweeks_complete_deaths,
     minnageraw = min(nageraw_rsyw),
     q90nageraw = quantile(nageraw_rsyw, probs = 0.9),

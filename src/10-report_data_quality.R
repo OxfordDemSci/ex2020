@@ -2,7 +2,8 @@
 
 # Init ------------------------------------------------------------
 
-library(here); library(glue); library(yaml)
+library(here); library(glue)
+library(yaml); library(readr)
 library(dplyr); library(tidyr)
 library(gt); library(ggplot2)
 
@@ -11,6 +12,7 @@ library(gt); library(ggplot2)
 wd <- here()
 source(glue('{wd}/src/00-global.R'))
 
+region_meta <- read_csv(glue('{wd}/cfg/region_metadata.csv'))
 config <- read_yaml(glue('{wd}/cfg/config.yaml'))
 cnst <- list()
 cnst <- within(cnst, {
@@ -39,30 +41,34 @@ tab$total_deaths_quality <-
     minopenageraw = min(death_total_minopenageraw)
   ) %>%
   pivot_wider(names_from = year, values_from = c(nageraw, nweeksmiss, minopenageraw)) %>%
-  select(-nweeksmiss_2019) %>% 
-  mutate(
-    included_in_all_cause_analysis = ifelse(
-      region_iso %in% cnst$regions_for_analysis,
-      'Regions included in all-cause life table analysis',
-      'Regions excluded from all-cause life table analysis'
-    )
-  ) %>% 
+  # 2019 is completely observed, don't show in table
   ungroup() %>%
-  gt(groupname_col = 'included_in_all_cause_analysis') %>%
+  # full country names
+  mutate(
+    region_name = factor(region_iso,
+                         levels = region_meta$region_code_iso3166_2,
+                         labels = region_meta$region_name
+    )
+  ) %>%
+  select(region_iso, region_name, everything(), -nweeksmiss_2019) %>%
+  gt() %>%
   cols_label(
-    region_iso = 'Country',
+    region_iso = 'Country ISO',
+    region_name = 'Country',
     nageraw_2019 = '# raw age-groups 2019',
     nageraw_2020 = '# raw age-groups 2020',
     minopenageraw_2019 = 'Open-age group 2019',
     minopenageraw_2020 = 'Open-age group 2020',
     nweeksmiss_2020 = '# missing weeks 2020'
   ) %>%
+  cols_hide('region_iso') %>%
   # show countries not used in analysis in grey
   tab_style(
     style = cell_text(color = 'lightgrey'),
     locations =
       cells_body(rows = !(region_iso %in% cnst$regions_for_analysis))
-  )
+  ) %>%
+  tab_source_note('Source data retreived 2021-02-20.')
 
 gtsave(
   tab$total_deaths_quality, filename = 'tab-data_quality_all_cause_deaths.html',
