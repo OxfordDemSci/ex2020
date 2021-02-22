@@ -43,7 +43,7 @@ and then execute each of the scripts (0 through 10) which will undertake sequent
 ### Versioning
 ------------
 
-This version of the code is pre-publication (v.0.1.0). If you have any su
+This version of the code is pre-publication (v.0.1.0). If you have any suggests, please don't hesitate to raise an issue here on this repository, or to e-mail one of the corresponding authors of the paper!
 
 ### License
 ------------
