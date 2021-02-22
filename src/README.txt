@@ -51,9 +51,9 @@
   definition of a year (365 or 366 days long) set exposures equal
   to mid year population estimates
   - if a region reports annual deaths using the iso-week-year
-  definition of a year (364 or 371 days ling), and if there is a
+  definition of a year (364 or 371 days long), and if there is a
   leap-week in that year, set exposures equal to
-  371/365*mid_year_population to account for the longer reporting
+  371/364*mid_year_population to account for the longer reporting
   period. in years without leap-weeks set exposures equal
   to mid year population estimates
 
