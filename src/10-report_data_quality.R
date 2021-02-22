@@ -16,7 +16,10 @@ region_meta <- read_csv(glue('{wd}/cfg/region_metadata.csv'))
 config <- read_yaml(glue('{wd}/cfg/config.yaml'))
 cnst <- list()
 cnst <- within(cnst, {
-  regions_for_analysis = config$regions_for_all_cause_analysis
+  regions_for_all_cause_analysis =
+    config$regions_for_all_cause_analysis
+  regions_for_covid_cause_analysis =
+    config$regions_for_covid_cause_analysis
   # harmonized data set
   path_harmonized = glue('{wd}/out/lt_input.rds')
   path_out = glue('{wd}/out')
@@ -45,6 +48,10 @@ tab$total_deaths_quality <-
   ungroup() %>%
   # full country names
   mutate(
+    include_in_all_cause_analysis =
+      region_iso %in% config$regions_for_all_cause_analysis,
+    include_in_covid_cause_analysis =
+      region_iso %in% config$regions_for_covid_cause_analysis,
     region_name = factor(region_iso,
                          levels = region_meta$region_code_iso3166_2,
                          labels = region_meta$region_name
@@ -59,15 +66,11 @@ tab$total_deaths_quality <-
     nageraw_2020 = '# raw age-groups 2020',
     minopenageraw_2019 = 'Open-age group 2019',
     minopenageraw_2020 = 'Open-age group 2020',
-    nweeksmiss_2020 = '# missing weeks 2020'
+    nweeksmiss_2020 = '# missing weeks 2020',
+    include_in_all_cause_analysis = 'All cause analysis',
+    include_in_covid_cause_analysis = 'Covid analysis'
   ) %>%
   cols_hide('region_iso') %>%
-  # show countries not used in analysis in grey
-  tab_style(
-    style = cell_text(color = 'lightgrey'),
-    locations =
-      cells_body(rows = !(region_iso %in% cnst$regions_for_analysis))
-  ) %>%
   tab_source_note('Source data retreived 2021-02-20.')
 
 gtsave(

@@ -86,4 +86,7 @@ regions_for_all_cause_analysis: [
     #'TW', # missing weeks
     'US'
 ]
-
+regions_for_covid_cause_analysis: [
+    'BE', 'CH', 'CL', 'CZ', 'DE', 'DK', 'ES', 'FR', 'GB-EAW', 'GB-SCT',
+     'NL', 'PT', 'SI'
+]
