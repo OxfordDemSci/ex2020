@@ -3,7 +3,7 @@
 </p>
 
 
-# 'Recent Gains in Life Expectancy Reversed by the COVID-19 Pandemic'
+## Recent Gains in Life Expectancy Reversed by the COVID-19 Pandemic
 
 [![Generic badge](https://img.shields.io/badge/R-4.0.4-orange.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/License-GNU-<green>.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/Maintained-Yes-red.svg)](https://shields.io/)
 
@@ -16,7 +16,7 @@ This is a repository to accompany 'Recent Gains in Life Expectancy Reversed by t
 ### Prerequisites
 ------------
 
-As a pre-requisite to running this locally, you will need a working installation of R with all of the necessary dependencies installed. 
+As a pre-requisite to running this locally, you will need a working installation of [**R**](https://www.r-project.org/) with all of the necessary dependencies installed. 
 
 ### Running the Code
 ------------
