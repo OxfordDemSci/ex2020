@@ -101,7 +101,14 @@ df_ex <- left_join(ex20, ex1519) %>%
     left_join(ex1519asb) %>%
     left_join(ids) %>%
     left_join(rank_e0f19) %>%
-    left_join(rank_d0m20)
+    left_join(rank_d0m20) %>%
+    # average difference 2015-19
+    mutate(
+        avg_ex_diff_1519 = case_when(
+            code %in% c("CL", "DE") ~ ex_diff_1519/3,
+            TRUE ~ ex_diff_1519/4
+        )
+    )
 
 # save the data frame for figures 1 and 2
 write_rds(df_ex, "{wd}/out/df_ex.rds" %>% glue)

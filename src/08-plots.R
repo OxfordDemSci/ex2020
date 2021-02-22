@@ -86,10 +86,10 @@ df_ex %>%
     geom_point(aes(x = ex_diff, color = sex, shape = sex), size = 2)+
     scale_color_manual(values = c("#B5223BFF", "#64B6EEFF"))+
     scale_shape_manual(values = c(1, 16))+
-    geom_point(aes(x = ex_diff_1519/4, color = sex), shape = 124, size = 3)+
+    geom_point(aes(x = avg_ex_diff_1519, color = sex), shape = 124, size = 3)+
     scale_y_discrete(position = "right")+
-    scale_x_continuous(breaks = seq(-1.5, 2.5, .5), expand = c(0,0))+
-    coord_cartesian(xlim = c(-1.8, .999))+
+    scale_x_continuous(position = "top", breaks = seq(-2, .5, .5), expand = c(0,0))+
+    coord_cartesian(xlim = c(-2.2, 1.2))+
     facet_wrap(~age, ncol = 3)+
     theme_minimal(base_family = font_rc)+
     theme(
@@ -111,7 +111,7 @@ df_ex %>%
                 hj = case_when(sex == "Female" ~ 1, TRUE ~ 0),
                 nj = case_when(sex == "Female" ~ 1, TRUE ~ 1.05)
             ),
-        aes(x = .77*nj, hjust = hj, color = sex,
+        aes(x = .9*nj, hjust = hj, color = sex,
             label = ex_diff_1519 %>% round(1)),
         size = 3, family = font_rc
     )
@@ -144,21 +144,24 @@ df_dec_age %>%
     )+
     coord_cartesian(xlim = c(-1, 1.5), expand = F)+
     scale_x_continuous(
+        # position = "top",
         breaks = seq(-1, 1, .5),
-        labels = c("-1", ".5", 0, ".5", 1)
+        labels = c("-1", "0.5", 0, "0.5", 1)
     )+
     theme_minimal(base_family = font_rc)+
     theme(
         panel.grid.minor.y = element_blank(),
         panel.spacing = unit(.5, "lines"),
         strip.text = element_text(face = 2),
-        legend.position = c(.93, .1),
-        legend.background = element_rect(color = "#18ffff", size = 2),
-        plot.background = element_rect(color = "#18ffff", size = 1)
+        legend.position = c(.93, .15),
+        axis.text.x = element_blank()
+        # legend.background = element_rect(color = "#18ffff", size = 2),
+        # plot.background = element_rect(color = "#eaeaea", size = 1)
     )+
     labs(
         fill = "FEMALES",
-        x = "Losses|Gains in life expectancy at birth, years",
+        # x = "Losses|Gains in life expectancy at birth, years",
+        x = NULL,
         y = "Age groups"
     )
 
@@ -177,17 +180,18 @@ df_dec_age %>%
     )+
     coord_cartesian(xlim = c(-1, 1.5), expand = F)+
     scale_x_continuous(
+        # position = "top",
         breaks = seq(-1, 1, .5),
-        labels = c("-1", ".5", 0, ".5", 1)
+        labels = c("-1", "0.5", 0, "0.5", 1)
     )+
     theme_minimal(base_family = font_rc)+
     theme(
         panel.grid.minor.y = element_blank(),
         panel.spacing = unit(.5, "lines"),
         strip.text = element_text(face = 2),
-        legend.position = c(.93, .1),
-        legend.background = element_rect(color = "#dfff00", size = 2),
-        plot.background = element_rect(color = "#dfff00", size = 1)
+        legend.position = c(.93, .15),
+        # legend.background = element_rect(color = "#dfff00", size = 2),
+        # plot.background = element_rect(color = "#eaeaea", size = 1)
     )+
     labs(
         fill = "MALES",
