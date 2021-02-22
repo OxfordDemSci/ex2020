@@ -10,7 +10,7 @@
 ### Introduction
 ------------
 
-This is a repository to accompany 'Recent Gains in Life Expectancy Reversed by the COVID-19 Pandemic'. A link to the open-access version of the paper can be found [**here**](https://vimeo.com/462292180). The replication files for this paper include customised functionality written in the [**R**](https://www.r-project.org/) statistical programming language.
+This is a repository to accompany 'Recent Gains in Life Expectancy Reversed by the COVID-19 Pandemic'. A link to the open-access version of the paper can be found by clicking _here_ in due course. The replication files for this paper include customised functionality written in the [**R**](https://www.r-project.org/) statistical programming language.
 
 
 ### Prerequisites
