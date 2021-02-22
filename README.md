@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="https://github.com/OxfordDemSci/ex2020/blob/master/assets/fig-1-wo2020-ann.png" width="1000"/>
+</p>
+
+
 # Code to Replicate 'Recent Gains in Life Expectancy Reversed by the COVID-19 Pandemic'
 
 [![Generic badge](https://img.shields.io/badge/R-4.0.4-orange.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/License-GNU-<green>.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/Maintained-Yes-red.svg)](https://shields.io/)
@@ -28,26 +33,6 @@ and then execute each of the scripts (0 through 10) which will undertake sequent
 ### Structure
 ----------------
 
-.<br>
-├── cfg<br>
-│   ├── config.yaml<br>
-│   ├── fig_specs.R<br>
-│   └── region_metadata.csv<br>
-├── dat<br>
-│   ├── cdc<br>
-│   ├── coverage<br>
-│   ├── hmdhfd<br>
-│   ├── ons<br>
-│   ├── stmf<br>
-│   └── wpp<br>
-├── out<br>
-│   └── sens<br><br>
-├── README.md<br>
-├── src<br>
-└── tmp<br>
-
-where:
-
 * _cfg_ relates to: configuration files
 * _dat_ relates to: input source data
 * _out_ relates to: output data, figures, and sensitivity analysis
@@ -66,4 +51,4 @@ This work is free. You can redistribute it and/or modify it under the terms of t
 
 ### Acknowledgements
 
-We are grateful to the extensive comments provided by Jim Oeppen, Alyson van Raalte and Christiaan Monden. Funding was generously provided through by the British Academy’s Newton International Fellowship grant NIFBA19/190679,the Rockwool Foundation’s Excess Deaths grant, a Leverhulme Trust Large Centre Grant, a John Fell Fund grant and a European Research Council grant.
+We are grateful to the extensive comments provided by Jim Oeppen, Alyson van Raalte and Christiaan Monden. Funding was generously provided through by aBritish Academy’s Newton International Fellowship,the Rockwool Foundation’s Excess Deaths grant, a Leverhulme Trust Large Centre Grant, a John Fell Fund grant and a European Research Council grant.
