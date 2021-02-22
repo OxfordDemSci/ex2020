@@ -1,6 +1,6 @@
 # Code to Replicate 'Recent Gains in Life Expectancy Reversed by the COVID-19 Pandemic'
 
-[![Generic badge](https://img.shields.io/badge/R-4.0.4-<red>.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/License-GNU-green.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/Maintained-Yes-red.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/R-4.0.4-orange.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/License-GNU-<green>.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/Maintained-Yes-red.svg)](https://shields.io/)
 
 ### Introduction
 ------------
@@ -23,6 +23,32 @@ $ git clone https://github.com/OxfordDemSci/ex2020.git
 ```
 
 and then execute each of the scripts (0 through 10) which will undertake sequential tasks like defining skeletons, to undertaking the PCLM, cleaning outputs for analysis, and data visualisation
+
+
+### Structure
+----------------
+
+.
+├── cfg
+│   ├── config.yaml
+│   ├── fig_specs.R
+│   └── region_metadata.csv
+├── cover.png
+├── dat
+│   ├── cdc
+│   ├── coverage
+│   ├── hmdhfd
+│   ├── ons
+│   ├── stmf
+│   └── wpp
+├── out
+│   ├── sens
+│   │
+│   └── tab-data_quality_all_cause_deaths.html
+├── README.md
+├── src
+└── tmp
+
 
 ### Versioning
 ------------
