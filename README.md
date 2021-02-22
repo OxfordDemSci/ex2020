@@ -28,27 +28,31 @@ and then execute each of the scripts (0 through 10) which will undertake sequent
 ### Structure
 ----------------
 
-.
-├── cfg
-│   ├── config.yaml
-│   ├── fig_specs.R
-│   └── region_metadata.csv
-├── cover.png
-├── dat
-│   ├── cdc
-│   ├── coverage
-│   ├── hmdhfd
-│   ├── ons
-│   ├── stmf
-│   └── wpp
-├── out
-│   ├── sens
-│   │
-│   └── tab-data_quality_all_cause_deaths.html
-├── README.md
-├── src
-└── tmp
+.<br>
+├── cfg<br>
+│   ├── config.yaml<br>
+│   ├── fig_specs.R<br>
+│   └── region_metadata.csv<br>
+├── dat<br>
+│   ├── cdc<br>
+│   ├── coverage<br>
+│   ├── hmdhfd<br>
+│   ├── ons<br>
+│   ├── stmf<br>
+│   └── wpp<br>
+├── out<br>
+│   └── sens<br><br>
+├── README.md<br>
+├── src<br>
+└── tmp<br>
 
+where:
+
+* _cfg_ relates to: configuration files
+* _dat_ relates to: input source data
+* _out_ relates to: output data, figures, and sensitivity analysis
+* _src_ relates to: code to replicate the wrangling, analysis and visualisation
+* _tmp_ relates to: a subdir to store temproary files
 
 ### Versioning
 ------------
