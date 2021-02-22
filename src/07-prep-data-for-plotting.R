@@ -12,14 +12,8 @@ library(glue)
 
 
 # Create a minimal table with codes and names of the countries ------------
-
-cntr <- c(
-    'AT', 'BE', 'BG', 'CH', 'CL', 'CZ',
-    'DE', 'DK', 'EE', 'ES', 'FI', 'FR',
-    'GB-EAW', 'GB-NIR', 'GB-SCT', 'HU',
-    'IL', 'LT', 'NL', 'PL', 'PT', 'SE',
-    'SI', 'US'
-)
+config <- yaml::read_yaml(glue::glue('{wd}/cfg/config.yaml'))
+cntr = config$regions_for_all_cause_analysis
 
 ids <- tibble(
     code = cntr,
@@ -74,7 +68,7 @@ ex1519 <- ex_diff %>%
     filter(! year %in% c(2020, 2015)) %>%
     select(-ex) %>%
     group_by(code, sex, age) %>%
-    summarise(ex_diff_1519 = ex_diff %>% sum) %>%
+    summarise(ex_diff_1519 = ex_diff %>% sum(na.rm = T)) %>%
     ungroup()
 
 ex1519asb <- df_lt %>%
@@ -83,8 +77,12 @@ ex1519asb <- df_lt %>%
         sex, year, age = x,
         ex
     ) %>%
-    filter(year %in% c(2015, 2019)) %>%
-    pivot_wider(names_from = year, values_from = ex, names_prefix = "ex_")
+    # hard fix for Germany and Chile -- take 2016 values
+    pivot_wider(names_from = year, values_from = ex, names_prefix = "ex_") %>%
+    mutate(ex_2015 = if_else(is.na(ex_2015), ex_2016, ex_2015)) %>%
+    select(-ex_2016, -ex_2017, -ex_2018, ex_2020)
+
+
 
 # ranking variable for Fig 1 (absolute levels) -- based on Female e0 2019
 rank_e0f19 <- ex1519asb %>%

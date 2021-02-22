@@ -19,8 +19,15 @@ df_ex <- read_rds("{wd}/out/df_ex.rds" %>% glue)
 # figrue 1 -- absolute levels of life expectancy --------------------------
 
 df_ex %>%
-    mutate(name = fct_reorder(name, rank_e0f19)) %>%
-    filter(age %in% c(0, 60, 80)) %>%
+    mutate(
+        name = name %>%
+            # asterix for Germany and Chile
+            str_replace("Chile", "Chile*") %>%
+            str_replace("Germany", "Germany*") %>%
+            as_factor() %>%
+            fct_reorder(rank_e0f19)
+    ) %>%
+    filter(age %in% c(0, 60)) %>%
     drop_na(name) %>%
     transmute(
         name, sex, age,
@@ -32,7 +39,7 @@ df_ex %>%
     ) %>%
     mutate(age = age %>% as_factor()) %>%
     ggplot(aes(ex, name, color = sex, shape = year, size = year))+
-    geom_hline(yintercept = seq(2, 22, 2), size = 5, color = "#eaeaea")+
+    geom_hline(yintercept = seq(2, 26, 2), size = 5, color = "#eaeaea")+
     geom_point()+
     scale_shape_manual(values = c(124, 43, 16))+
     scale_size_manual(values = c(4, 4, 1.5))+
@@ -56,18 +63,25 @@ df_ex %>%
 
 one <- last_plot()
 ggsave("{wd}/out/fig-1.pdf" %>% glue, one,
-       width = 9, height = 4, device = cairo_pdf)
+       width = 6, height = 4.5, device = cairo_pdf)
 
 
 
 # figure 2 -- changes in life expectancy ----------------------------------
 
 df_ex %>%
-    filter(age %in% c(0, 60, 80)) %>%
+    filter(age %in% c(0, 60)) %>%
     drop_na(name) %>%
-    mutate(name = fct_reorder(name, rank_d0m20)) %>%
+    mutate(
+        name = name %>%
+            # asterix for Germany and Chile
+            str_replace("Chile", "Chile*") %>%
+            str_replace("Germany", "Germany*") %>%
+            as_factor() %>%
+            fct_reorder(rank_d0m20)
+    ) %>%
     ggplot(aes(y = name))+
-    geom_hline(yintercept = seq(2, 22, 2), size = 5, color = "#eaeaea")+
+    geom_hline(yintercept = seq(2, 26, 2), size = 5, color = "#eaeaea")+
     geom_vline(xintercept = 0, size = 2, color = "#bababa")+
     geom_point(aes(x = ex_diff, color = sex, shape = sex), size = 2)+
     scale_color_manual(values = c("#B5223BFF", "#64B6EEFF"))+
@@ -103,7 +117,7 @@ df_ex %>%
     )
 
 two <- last_plot()
-ggsave("{wd}/out/fig-2.pdf" %>% glue, two, width = 9, height = 4, device = cairo_pdf)
+ggsave("{wd}/out/fig-2.pdf" %>% glue, two, width = 6, height = 4.5, device = cairo_pdf)
 
 
 
@@ -123,7 +137,7 @@ df_dec_age %>%
     ggplot(aes(ctb, age3, fill = period))+
     geom_col()+
     geom_vline(xintercept = 0, size = .25, color = "#18ffff")+
-    facet_wrap(~name, ncol = 6, dir = "v")+
+    facet_wrap(~name, ncol = 7, dir = "v")+
     scale_fill_manual(
         values = c("#e91e63", "#38006b"),
         guide  = guide_legend(ncol = 1, reverse = TRUE)
@@ -137,7 +151,8 @@ df_dec_age %>%
     theme(
         panel.grid.minor.y = element_blank(),
         panel.spacing = unit(.5, "lines"),
-        legend.position = c(.92, .06),
+        strip.text = element_text(face = 2),
+        legend.position = c(.93, .1),
         legend.background = element_rect(color = "#18ffff", size = 2),
         plot.background = element_rect(color = "#18ffff", size = 1)
     )+
@@ -155,7 +170,7 @@ df_dec_age %>%
     ggplot(aes(ctb, age3, fill = period))+
     geom_col()+
     geom_vline(xintercept = 0, size = .25, color = "#dfff00")+
-    facet_wrap(~name, ncol = 6, dir = "v")+
+    facet_wrap(~name, ncol = 7, dir = "v")+
     scale_fill_manual(
         values = c("#3FB3F7FF", "#003737FF"),
         guide  = guide_legend(ncol = 1, reverse = TRUE)
@@ -169,7 +184,8 @@ df_dec_age %>%
     theme(
         panel.grid.minor.y = element_blank(),
         panel.spacing = unit(.5, "lines"),
-        legend.position = c(.92, .06),
+        strip.text = element_text(face = 2),
+        legend.position = c(.93, .1),
         legend.background = element_rect(color = "#dfff00", size = 2),
         plot.background = element_rect(color = "#dfff00", size = 1)
     )+
@@ -261,28 +277,60 @@ ggsave("{wd}/out/fig-3.pdf" %>% glue, three, width = 10, height = 8, device = ca
 # UPD  2021-02-15 ------------------------------
 # Only show 2020 covid contribution
 
+# df_dec_age_cause %>%
+#     left_join(ids) %>%
+#     left_join(rank_d0m20) %>%
+#     drop_na(name) %>%
+#     mutate(name = fct_reorder(name, rank_d0m20)) %>%
+#     filter(period_cause == "2019-20 COVID") %>%
+#
+#     ggplot(aes(ctb, age3, color = sex, shape = sex))+
+#     geom_hline(yintercept = 2, size = 5, color = "#eaeaea")+
+#     geom_vline(xintercept = 0, size = .25, color = "#dfff00")+
+#     geom_point()+
+#     scale_shape_manual(values = c(1, 16))+
+#     scale_color_manual(values = c("#B5223BFF", "#64B6EEFF"))+
+#     scale_y_discrete(position = "right")+
+#     scale_x_continuous(breaks = c(-1, -.5, 0))+
+#     facet_wrap(~name, ncol = 3, dir = "v")+
+#     theme_minimal(base_family = font_rc)+
+#     theme(
+#         legend.position = "none",
+#         panel.grid.major.y = element_blank(),
+#         panel.grid.minor.y = element_blank(),
+#         panel.spacing.x = unit(2, "lines")
+#     )+
+#     labs(
+#         x = "Losses|Gains in life expectancy at birth, years",
+#         y = NULL
+#     )
+
+# UPD  2021-02-22 ------------------------------
+# only c19 and collapse age
+
 df_dec_age_cause %>%
     left_join(ids) %>%
-    left_join(rank_d0m20) %>%
     drop_na(name) %>%
-    mutate(name = fct_reorder(name, rank_d0m20)) %>%
     filter(period_cause == "2019-20 COVID") %>%
+    group_by(name, sex) %>%
+    summarise(ctb = ctb %>% sum(na.rm = T)) %>%
+    ungroup() %>%
+    mutate(name = name %>% fct_reorder(ctb %>% desc)) %>%
 
-    ggplot(aes(ctb, age3, color = sex, shape = sex))+
-    geom_hline(yintercept = 2, size = 5, color = "#eaeaea")+
-    geom_vline(xintercept = 0, size = .25, color = "#dfff00")+
-    geom_point()+
-    scale_shape_manual(values = c(1, 16))+
-    scale_color_manual(values = c("#B5223BFF", "#64B6EEFF"))+
+    ggplot(aes(ctb, name, fill = sex))+
+    geom_col()+
+    scale_fill_manual(values = c("#B5223BFF", "#64B6EEFF"))+
     scale_y_discrete(position = "right")+
-    scale_x_continuous(breaks = c(-1, -.5, 0))+
-    facet_wrap(~name, ncol = 3, dir = "v")+
+    scale_x_continuous(position = "top", breaks = c(-1.5, -1, -.5, 0))+
+    facet_wrap(~sex, ncol = 2)+
     theme_minimal(base_family = font_rc)+
     theme(
         legend.position = "none",
         panel.grid.major.y = element_blank(),
         panel.grid.minor.y = element_blank(),
-        panel.spacing.x = unit(2, "lines")
+        panel.spacing.x = unit(2, "lines"),
+        strip.text = element_blank(),
+        axis.text.y = element_text(face = 2),
     )+
     labs(
         x = "Losses|Gains in life expectancy at birth, years",
@@ -291,7 +339,7 @@ df_dec_age_cause %>%
 
 four <- last_plot()
 
-ggsave("{wd}/out/fig-4.pdf" %>% glue, four, width = 9, height = 4, device = cairo_pdf)
+ggsave("{wd}/out/fig-4.pdf" %>% glue, four, width = 6, height = 3, device = cairo_pdf)
 
 
 # ggsave("tmp/fig-1.png", one, width = 9, height = 4, type = "cairo")
