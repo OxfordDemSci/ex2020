@@ -135,7 +135,12 @@ df_dec_age <- df_dec$decomposition_results_by_age %>%
     left_join(rank_d0m20) %>%
     drop_na(name) %>%
     mutate(
-        name = fct_reorder(name, rank_d0m20),
+        name = name %>%
+            # asterix for Germany and Chile
+            str_replace("Chile", "Chile*") %>%
+            str_replace("Germany", "Germany*") %>%
+            as_factor() %>%
+            fct_reorder(rank_d0m20),
         period = period %>% fct_rev
     )
 
