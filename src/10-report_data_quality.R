@@ -2,7 +2,7 @@
 
 # Init ------------------------------------------------------------
 
-library(here); library(glue)
+library(here); library(glue); library(yaml)
 library(dplyr); library(tidyr)
 library(gt); library(ggplot2)
 
@@ -11,10 +11,13 @@ library(gt); library(ggplot2)
 wd <- here()
 source(glue('{wd}/src/00-global.R'))
 
+config <- read_yaml(glue('{wd}/cfg/config.yaml'))
 cnst <- list()
 cnst <- within(cnst, {
+  regions_for_analysis = config$regions_for_all_cause_analysis
   # harmonized data set
   path_harmonized = glue('{wd}/out/lt_input.rds')
+  path_out = glue('{wd}/out')
 })
 
 dat <- list()
@@ -37,8 +40,15 @@ tab$total_deaths_quality <-
   ) %>%
   pivot_wider(names_from = year, values_from = c(nageraw, nweeksmiss, minopenageraw)) %>%
   select(-nweeksmiss_2019) %>% 
+  mutate(
+    included_in_all_cause_analysis = ifelse(
+      region_iso %in% cnst$regions_for_analysis,
+      'Regions included in all-cause life table analysis',
+      'Regions excluded from all-cause life table analysis'
+    )
+  ) %>% 
   ungroup() %>%
-  gt() %>%
+  gt(groupname_col = 'included_in_all_cause_analysis') %>%
   cols_label(
     region_iso = 'Country',
     nageraw_2019 = '# raw age-groups 2019',
@@ -46,7 +56,18 @@ tab$total_deaths_quality <-
     minopenageraw_2019 = 'Open-age group 2019',
     minopenageraw_2020 = 'Open-age group 2020',
     nweeksmiss_2020 = '# missing weeks 2020'
+  ) %>%
+  # show countries not used in analysis in grey
+  tab_style(
+    style = cell_text(color = 'lightgrey'),
+    locations =
+      cells_body(rows = !(region_iso %in% cnst$regions_for_analysis))
   )
+
+gtsave(
+  tab$total_deaths_quality, filename = 'tab-data_quality_all_cause_deaths.html',
+  path = cnst$path_out
+)
 
 # Covid deaths data quality table ---------------------------------
 
