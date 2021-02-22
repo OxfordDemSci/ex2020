@@ -3,7 +3,7 @@
 </p>
 
 
-# Code to Replicate 'Recent Gains in Life Expectancy Reversed by the COVID-19 Pandemic'
+# 'Recent Gains in Life Expectancy Reversed by the COVID-19 Pandemic'
 
 [![Generic badge](https://img.shields.io/badge/R-4.0.4-orange.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/License-GNU-<green>.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/Maintained-Yes-red.svg)](https://shields.io/)
 
@@ -38,11 +38,12 @@ and then execute each of the scripts (0 through 10) which will undertake sequent
 * _out_ relates to: output data, figures, and sensitivity analysis
 * _src_ relates to: code to replicate the wrangling, analysis and visualisation
 * _tmp_ relates to: a subdir to store temproary files
+* _ass_ relates to: a place to store repo assets
 
 ### Versioning
 ------------
 
-This version of the code is pre-publication (v.0.1.0). Please note: although the library logs data updates, it could be that additional dictionary based classifications are required with regards to the ```/data/support/dict_replacer_broad.tsv``` file. Please raise an issue in this repo to alert us of any necessary entries, or any suggestions which you may have in general, although we will monitor this over time.
+This version of the code is pre-publication (v.0.1.0). If you have any su
 
 ### License
 ------------
