@@ -52,4 +52,4 @@ This work is free. You can redistribute it and/or modify it under the terms of t
 
 ### Acknowledgements
 
-We are grateful to the extensive comments provided by Jim Oeppen, Alyson van Raalte and Christiaan Monden. Funding was generously provided through by aBritish Academy’s Newton International Fellowship,the Rockwool Foundation’s Excess Deaths grant, a Leverhulme Trust Large Centre Grant, a John Fell Fund grant and a European Research Council grant.
+We are grateful to the extensive comments provided by Jim Oeppen, Alyson van Raalte and Christiaan Monden. Funding was generously provided by a British Academy Newton International Fellowship,the Rockwool Foundation’s Excess Deaths grant, a Leverhulme Trust Large Centre Grant, a John Fell Fund grant, a European Research Council grant and the Interdisciplinary Centre on Population Dynamics (CPop).
