@@ -37,7 +37,7 @@ and then execute each of the scripts (0 through 10) which will undertake sequent
 * _dat_ relates to: input source data
 * _out_ relates to: output data, figures, and sensitivity analysis
 * _src_ relates to: code to replicate the wrangling, analysis and visualisation
-* _tmp_ relates to: a subdir to store temproary files
+* _tmp_ relates to: a subdir to store temporary files
 * _ass_ relates to: a place to store repo assets
 
 ### Versioning
@@ -52,4 +52,4 @@ This work is free. You can redistribute it and/or modify it under the terms of t
 
 ### Acknowledgements
 
-We are grateful to the extensive comments provided by Jim Oeppen, Alyson van Raalte and Christiaan Monden. Funding was generously provided by a British Academy Newton International Fellowship,the Rockwool Foundation’s Excess Deaths grant, a Leverhulme Trust Large Centre Grant, a John Fell Fund grant, a European Research Council grant and the Interdisciplinary Centre on Population Dynamics (CPop).
+We are grateful to the extensive comments provided by Jim Oeppen, Alyson van Raalte and Christiaan Monden. Funding was generously provided by a British Academy Newton International Fellowship, the Rockwool Foundation’s Excess Deaths grant, a Leverhulme Trust Large Centre Grant, a John Fell Fund grant, a European Research Council grant and the Interdisciplinary Centre on Population Dynamics (CPop).
