@@ -89,7 +89,7 @@ df_ex %>%
     geom_point(aes(x = avg_ex_diff_1519, color = sex), shape = 124, size = 3)+
     scale_y_discrete(position = "right")+
     scale_x_continuous(position = "top", breaks = seq(-2, .5, .5), expand = c(0,0))+
-    coord_cartesian(xlim = c(-2.2, 1.2))+
+    coord_cartesian(xlim = c(-2.2, .6))+
     facet_wrap(~age, ncol = 3)+
     theme_minimal(base_family = font_rc)+
     theme(
@@ -104,16 +104,6 @@ df_ex %>%
     labs(
         x = "Difference in life expectancy, years",
         y = NULL
-    )+
-    geom_text(
-        data = . %>%
-            mutate(
-                hj = case_when(sex == "Female" ~ 1, TRUE ~ 0),
-                nj = case_when(sex == "Female" ~ 1, TRUE ~ 1.05)
-            ),
-        aes(x = .9*nj, hjust = hj, color = sex,
-            label = ex_diff_1519 %>% round(1)),
-        size = 3, family = font_rc
     )
 
 two <- last_plot()
