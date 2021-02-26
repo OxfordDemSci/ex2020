@@ -14,24 +14,21 @@
 #      States. We use this data for years 2015 to 2019 for the US,
 #      lacking any STMF data for these years.
 #
-# In a first step we harmonize the labels of all three data sources,
-# select the preferred data source for each region and year, and
-# associate already harmonized exposures with each region x year x sex
-# stratum.
+# In a first step we harmonize the labels of all three data sources, and
+# select the preferred data source for each region and year. We then
+# perform a model based ungrouping (doi:10.1093/aje/kwv020) of deaths
+# into single ages for each region-year-sex stratum. During this
+# ungrouping we also derive person-weeks of exposure from the mid-year
+# population counts for each age within a stratum.
 #
-# The death counts come in widely different age groupings.
-# Age groupings vary by country, year, and even week. In order to
-# harmonize the death counts into a uniform single ages 0 to 100+ we
-# fit the Penalized Composite Link Model
-# This code harmonizes the age groupings to single year age groups
-# (doi:10.1093/aje/kwv020) implemented in
-# https://github.com/mpascariu/ungroup.
+# Exposures are adjusted for the length of the observation period within
+# a year, taking into weeks missing from the input data and leap-weeks.
 #
-# The ungrouping is separately applied to each
+# Because the age grouping scheme may vary within a year, the
+# ungrouping is separately applied to each
 # region x sex x year x age pattern combination in the input data.
-#
-# The ungrouped STMF deaths are then aggregated into yearly death
-# counts by age.
+# The ungrouped STMF deaths and exposures are then aggregated into
+# annual death counts by age.
 
 # Init ------------------------------------------------------------
 
@@ -214,6 +211,7 @@ dat$stmf_harmonized_labels <-
 #                 summed death counts
 # nweeksyear: the number of weeks in the year, may vary according to the
 #             calendar used by the data provider
+# source: where does the data originate?
 dat$stmf_ready_for_ungroup <-
   dat$stmf_harmonized_labels %>%
   arrange(region_iso, sex, year, iso_week, age_start) %>%
@@ -412,7 +410,7 @@ dat$ungrouped <-
 
     # adjust midyearpop for the fraction of the observed year and
     # for eventual leap weeks
-    #population_py <- MidyearPop2Exposures(midyearpop, nweeksobserved)
+    population_py <- MidyearPop2Exposures(midyearpop, nweeksobserved)
         
     cat('Try PCLM on', .y$region_iso, .y$sex, .y$year, .y$agegroup_pattern, Sys.time(), '\n')
     # ungroup deaths via PCLM in specific country, sex, year and
@@ -433,7 +431,7 @@ dat$ungrouped <-
       ungrouped_deaths <- tibble(
         age_start = 0:100,
         deaths = round(ungrouped_deaths, 2),
-        #population_py = round(population_py, 2),
+        population_py = round(population_py, 2),
         lambda = fit_pclm$smoothPar[1],
         error = FALSE,
         message = as.character(NA),
@@ -470,14 +468,16 @@ dat$ungrouped <-
   }) %>% # End of group_modify() looping over sex, age, year, grouping pattern
   ungroup()
 
-dat$death <-
+# sum deaths and exposures over eventual multiple
+# age patterns observed within a year and derive some
+# data quality metrics
+dat$ungrouped <-
   dat$ungrouped %>%
-  # sum deaths over multiple age patterns observed within a year
   group_by(region_iso, sex, year, age_start) %>%
   summarise(
     nweeksyear = nweeksyear[1],
     deaths = sum(deaths),
-    #population_py = sum(population_py),
+    population_py = sum(population_py),
     nweeksobserved = sum(nweeksobserved),
     nweeksmiss = nweeksyear - nweeksobserved,
     minnageraw = min(nageraw),
@@ -489,9 +489,14 @@ dat$death <-
   mutate(
     id = GenerateRowID(region_iso, sex, age_start, year)
   ) %>%
-  ungroup() %>%
+  ungroup()
+
+# prepare the data for export
+dat$death <-
+  dat$ungrouped %>%
   select(
-    id, death_total = deaths, #population_py,
+    id, death_total = deaths,
+    population_py,
     death_total_nweeksmiss = nweeksmiss,
     death_total_minnageraw = minnageraw,
     death_total_maxnageraw = maxnageraw,
@@ -499,7 +504,6 @@ dat$death <-
     death_total_maxopenageraw = maxopenageraw,
     death_total_source = source
   )
-
 dat$death <-
   dat$skeleton %>% select(id) %>%
   left_join(dat$death, by = 'id')
@@ -523,8 +527,8 @@ walk(cnst$region_lookup$region_code_iso3166_2, ~{
 
 # diagnostic plots for year to year age distribution of deaths
 dat$deathplot <-
-  dat$death %>%
-  filter(sex == 'Male', age_start < 100) %>%
+  dat$ungrouped %>%
+  filter(sex == 'Male') %>%
   mutate(is2020 = ifelse(year == 2020, TRUE, FALSE))
 
 fig$death_pclm <-
@@ -532,7 +536,7 @@ fig$death_pclm <-
   ggplot() +
   geom_line(
     aes(
-      x = age_start, y = death_total/population_py, color = is2020,
+      x = age_start, y = deaths, color = is2020,
       group = interaction(year), size = is2020
     )
   ) +
@@ -542,7 +546,28 @@ fig$death_pclm <-
   guides(color = 'none', size = 'none') +
   fig_spec$MyGGplotTheme() +
   labs(
-    title = 'Ungrouped male death counts by age and country (STMF)',
+    title = 'Ungrouped male death counts by age and country',
+    subtitle = 'Year 2020 is red, prior years grey',
+    x = '',
+    y = ''
+  )
+
+fig$hazard_pclm <-
+  dat$deathplot %>%
+  ggplot() +
+  geom_line(
+    aes(
+      x = age_start, y = deaths/population_py, color = is2020,
+      group = interaction(year), size = is2020
+    )
+  ) +
+  scale_size_manual(values = c(0.1, 0.3)) +
+  scale_color_manual(values = c(`FALSE` = 'grey', `TRUE` = 'red')) +
+  facet_wrap(~region_iso, scales = 'free_y') +
+  guides(color = 'none', size = 'none') +
+  fig_spec$MyGGplotTheme() +
+  labs(
+    title = 'Ungrouped male death rates by age and country',
     subtitle = 'Year 2020 is red, prior years grey',
     x = '',
     y = ''

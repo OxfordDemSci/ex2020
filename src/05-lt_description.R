@@ -104,6 +104,17 @@ dat$lt_85_sim <-
 
 # life-tables by region, sex, and year
 
+# open age_group 100+
+dat$lt_100 <-
+  dat$lt_input_100_sub %>%
+  arrange(region_iso, sex, year, age_start) %>%
+  group_by(region_iso, sex, year) %>%
+  group_modify(~{
+    CalculateLifeTable(.x, age_start, age_width, death_total, population_py)
+  }) %>%
+  ungroup()
+
+
 # open age group 85+
 dat$lt_85 <-
   dat$lt_input_85_sub %>%
@@ -114,15 +125,6 @@ dat$lt_85 <-
   }) %>%
   ungroup()
 
-# open age_group 100+
-dat$lt_100 <-
-  dat$lt_input_100_sub %>%
-  arrange(region_iso, sex, year, age_start) %>%
-  group_by(region_iso, sex, year) %>%
-  group_modify(~{
-    CalculateLifeTable(.x, age_start, age_width, death_total, population_py)
-  }) %>%
-  ungroup()
 
 # Analyze ex and hx changes ---------------------------------------
 

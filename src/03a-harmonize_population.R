@@ -9,16 +9,6 @@
 #     - years < 2019 from HMD midyear pop estimates
 #     - years 2019,2020 projected based on HMD and HFD population,
 #      mortality and fertility data
-# (3) Derive person-years of exposure from mid-year population counts
-#     - if a region reports annual deaths using the Gregorian calendar
-#       definition of a year (365 or 366 days long) set exposures equal
-#       to mid year population estimates
-#     - if a region reports annual deaths using the iso-week-year
-#       definition of a year (364 or 371 days long), and if there is a
-#       leap-week in that year, set exposures equal to
-#       371/364*mid_year_population to account for the longer reporting
-#       period. in years without leap-weeks set exposures equal
-#       to mid year population estimates
 
 # Init ------------------------------------------------------------
 
@@ -373,42 +363,10 @@ dat$pop_joined <-
     )
   )
 
-# Derive exposures ------------------------------------------------
-
-dat$exposure_joined <-
-  dat$pop_joined %>%
-  left_join(region_meta, by = c('region_iso' = 'region_code_iso3166_2')) %>%
-  # adjust person-years of exposure for leap-weeks when reporting
-  # period of deaths is the iso-week-date calendar
-  mutate(
-    population_py = ifelse(
-      calendar_stmf == 'iso_week_date' &
-        YearHasIsoWeek53(year),
-      round(population_midyear*371/364, 2),
-      population_midyear
-    )
-  )
-
-# visual check of population exposures
-fig$population_py <-
-  dat$exposure_joined %>%
-  mutate(year1920 = year %in% 2019:2020) %>%
-  PopPyramids(
-    population = population_py,
-    age = age_start, sex = sex, year = year,
-    highlight = year1920,
-    facet = region_iso
-  ) +
-  labs(
-    y = 'Person-years of exposure in 1000s',
-    title = 'Person-year exposure estimates 2015-18 (grey) and 2019/20 (red)'
-  ) +
-  fig_spec$MyGGplotTheme(scaler = 0.8)
-
 # select variables of interest for joined data
 dat$joined <-
-  dat$exposure_joined %>%
-  select(id, population_midyear, population_py, population_source)
+  dat$pop_joined %>%
+  select(id, population_midyear, population_source)
 
 # Export ----------------------------------------------------------
 
@@ -419,9 +377,6 @@ saveRDS(
 
 fig_spec$ExportFigure(
   fig$wpp_population, path = cnst$path_out, scale = 2
-)
-fig_spec$ExportFigure(
-  fig$population_py, path = cnst$path_out, scale = 2
 )
 fig_spec$ExportFigure(
   fig$gb_population, path = cnst$path_out
