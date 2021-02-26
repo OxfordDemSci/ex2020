@@ -21,6 +21,7 @@
 - `death_covid_date`: number of deaths due to covid as of <date>
 - `death_covid_nageraw`: the number of age groups in the covid input data
 - `ex_wpp_estimate`: life expectancy estimates from the World Population prospects for a five year period, merged at the midpoint year
+- `ex_hmd_estimate`: life expectancy estimates from the Human Mortality Database
 
 ## Deaths
 
@@ -65,7 +66,9 @@
 - source: COVerAGE-DB (https://osf.io/mpwjq/)
 - the data base reports cumulative numbers of COVID deaths over days of a year, we extract the most up to date yearly total
 
-## Life expectancy estimates
+## External life expectancy estimates
 
-- source: World Population Prospects (https://population.un.org/wpp/Download/Files/1_Indicators%20(Standard)/CSV_FILES/WPP2019_Life_Table_Medium.csv)
-- estimates for the five year period 2015-2019
+- source:
+  - World Population Prospects (https://population.un.org/wpp/Download/Files/1_Indicators%20(Standard)/CSV_FILES/WPP2019_Life_Table_Medium.csv), estimates for the five year period 2015-2019
+  - Human Mortality Database (https://mortality.org/), single year and age tables
+

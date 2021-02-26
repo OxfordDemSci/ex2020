@@ -114,7 +114,6 @@ dat$lt_100 <-
   }) %>%
   ungroup()
 
-
 # open age group 85+
 dat$lt_85 <-
   dat$lt_input_85_sub %>%
@@ -124,7 +123,6 @@ dat$lt_85 <-
     CalculateLifeTable(.x, age_start, age_width, death_total, population_py)
   }) %>%
   ungroup()
-
 
 # Analyze ex and hx changes ---------------------------------------
 
@@ -290,6 +288,12 @@ walk(c(0, 60), ~{
     ) %>%
     ggplot(aes(x = year, y = ex, color = sex)) +
     geom_point(aes(shape = open_age_group)) +
+    geom_line(
+      aes(y = ex_hmd_estimate), linetype = 2,
+      data =
+        dat$lt_input_85_sub %>%
+        filter(age_start == .x)
+    ) +
     geom_segment(
       aes(x = 2015, xend = 2019, y = ex_wpp_estimate, yend = ex_wpp_estimate),
       data =
@@ -305,7 +309,7 @@ walk(c(0, 60), ~{
     scale_shape_manual(values = c(`85+` = 1, `100+` = 3)) +
     fig_spec$MyGGplotTheme(panel_border = TRUE, grid = 'xy', scaler = 0.8) +
     labs(
-      title = glue('Estimated yearly life expectancy at age {.x} compared with WPP 5 year average estimates'),
+      title = glue('Estimated yearly life expectancy at age {.x} compared with HMD (dashed line) and WPP (solid line) 5 year average estimates'),
       y = glue('e{.x}')
     )
 })
