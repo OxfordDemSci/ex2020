@@ -76,6 +76,9 @@ cnst <- within(cnst, {
   # where to put the harmonized data
   path_harmonized = glue('{wd}/tmp/harmonized_death.rds')
   
+  # out path for figures
+  path_fig = glue('{wd}/out')
+  
   # lookup table for region codes
   # only countries defined in skeleton
   region_lookup = 
@@ -578,3 +581,10 @@ fig$hazard_pclm <-
 
 saveRDS(dat$death, file = cnst$path_harmonized)
 
+fig_spec$ExportFigure(
+  fig$death_pclm, path = cnst$path_fig, scale = 1.5
+)
+
+fig_spec$ExportFigure(
+  fig$hazard_pclm, path = cnst$path_fig, scale = 1.5
+)

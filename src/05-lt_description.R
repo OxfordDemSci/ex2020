@@ -2,6 +2,8 @@
 
 # Init ------------------------------------------------------------
 
+set.seed(1987)
+
 library(here); library(glue)
 library(tidyverse); library(yaml)
 library(patchwork)
