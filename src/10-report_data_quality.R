@@ -39,12 +39,16 @@ tab$total_deaths_quality <-
   filter(year %in% 2019:2020) %>%
   group_by(region_iso, year) %>%
   summarise(
-    nageraw = min(death_total_q90nageraw),
+    rangenageraw = paste0('[',
+                          min(death_total_minnageraw), ',',
+                          max(death_total_maxnageraw), ']'),
     nweeksmiss = max(death_total_nweeksmiss),
     minopenageraw = min(death_total_minopenageraw)
   ) %>%
-  pivot_wider(names_from = year, values_from = c(nageraw, nweeksmiss, minopenageraw)) %>%
-  # 2019 is completely observed, don't show in table
+  pivot_wider(
+    names_from = year,
+    values_from = c(rangenageraw, nweeksmiss, minopenageraw)
+  ) %>%
   ungroup() %>%
   # full country names
   mutate(
@@ -57,15 +61,16 @@ tab$total_deaths_quality <-
                          labels = region_meta$region_name
     )
   ) %>%
+  # 2019 is completely observed, don't show in table
   select(region_iso, region_name, everything(), -nweeksmiss_2019) %>%
   gt() %>%
   cols_label(
     region_iso = 'Country ISO',
     region_name = 'Country',
-    nageraw_2019 = '# raw age-groups 2019',
-    nageraw_2020 = '# raw age-groups 2020',
-    minopenageraw_2019 = 'Open-age group 2019',
-    minopenageraw_2020 = 'Open-age group 2020',
+    rangenageraw_2019 = 'Range # raw age-groups 2019',
+    rangenageraw_2020 = 'Range # raw age-groups 2020',
+    minopenageraw_2019 = 'Min. open-age group 2019',
+    minopenageraw_2020 = 'Min. open-age group 2020',
     nweeksmiss_2020 = '# missing weeks 2020',
     include_in_all_cause_analysis = 'All cause analysis',
     include_in_covid_cause_analysis = 'Covid analysis'
