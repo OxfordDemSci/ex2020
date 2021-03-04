@@ -40,4 +40,6 @@ se_e0 <- se_dr %>%
     summarise(e0 = mx %>% log %>% e0)
 
 se_e0 %>%
-    filter(year %in% 2019:2020)
+    filter(year %in% 2019:2020) %>%
+    mutate(e0 = e0 %>% round(2))%>%
+    view
