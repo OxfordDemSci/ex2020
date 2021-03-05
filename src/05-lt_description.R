@@ -31,9 +31,9 @@ source(glue('{wd}/cfg/fig_specs.R'))
 # simple piecewise-exponential life-table
 CalculateLifeTable <-
   function (df, x, nx, Dx, Ex) {
-    
+
     require(dplyr)
-    
+
     df %>%
       transmute(
         x = {{x}},
@@ -47,7 +47,7 @@ CalculateLifeTable <-
         Tx = rev(cumsum(rev(Lx))),
         ex = Tx/lx
       )
-    
+
   }
 
 # Data ------------------------------------------------------------
@@ -326,6 +326,33 @@ saveRDS(dat$lt_input_85, file = glue('{wd}/out/lt_input_85.rds'))
 # save the all cause life tables
 saveRDS(dat$lt_85, file = glue('{wd}/out/lt_output_85.rds'))
 saveRDS(dat$lt_100, file = glue('{wd}/out/lt_output_100.rds'))
+
+
+# !!! ACHTUNG !!! hard patch temp fix Sweden ------------------------------
+df_lt <- read_rds("{wd}/out/lt_output_85.rds" %>% glue)
+se_lt <- read_rds("{wd}/out/patch-sweden-lt.rds" %>% glue) %>%
+  filter(year %in% 2015:2020, x %>% is_weakly_less_than(85)) %>%
+  transmute(
+    region_iso = "SE",
+    sex = sex %>% as_factor %>% fct_rev %>% lvls_revalue(c("Female", "Male")),
+    year = year %>% as.integer(),
+    x, nx, mx, px, qx, lx, dx, Lx, Tx, ex
+  )
+# patch the dataset
+df_lt_patched <- df_lt %>%
+  filter(!region_iso == "SE") %>%
+  bind_rows(se_lt) %>%
+  arrange(region_iso, sex, year, x)
+#save patched
+saveRDS(df_lt_patched, file = glue('{wd}/out/lt_output_85_patched.rds'))
+
+# UPD  2021-03-05 ------------------------------
+# !!! JM
+# Similar patch needed for lt_input_85 in order to perform decomposition
+
+
+
+
 
 # save e0, e60 change
 fig_spec$ExportFigure(fig$ex_change, path = cnst$path_out)
