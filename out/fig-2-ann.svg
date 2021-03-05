@@ -31,7 +31,7 @@
 
 
 
-        <dc:title />
+        <dc:title></dc:title>
 
 
 
@@ -2707,9 +2707,9 @@
    inkscape:window-maximized="0"
    inkscape:window-y="23"
    inkscape:window-x="52"
-   inkscape:cy="261.98308"
-   inkscape:cx="200.94792"
-   inkscape:zoom="0.61926335"
+   inkscape:cy="285.51333"
+   inkscape:cx="139.45317"
+   inkscape:zoom="1.5329416"
    showgrid="false"
    id="namedview2989"
    inkscape:window-height="855"
@@ -4714,14 +4714,14 @@
 
 <text
    id="text2501-6"
-   y="716.10071"
-   x="-39.523411"
+   y="728.10071"
+   x="-38.023411"
    style="font-size:28px;line-height:0.9;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab';word-spacing:0px;fill:#64b6ee;fill-opacity:1;stroke-width:0.75"
    xml:space="preserve"
    transform="scale(1,-1)"><tspan
      style="font-weight:bold;font-size:18px;fill:#64b6ee;fill-opacity:1;stroke-width:0.75"
-     y="716.10071"
-     x="-39.523411"
+     y="728.10071"
+     x="-38.023411"
      id="tspan2499-2"
      sodipodi:role="line">males</tspan></text>
 
@@ -4731,13 +4731,13 @@
    xml:space="preserve"
    style="font-size:28px;line-height:0.9;font-family:'Roboto Slab';-inkscape-font-specification:'Roboto Slab';word-spacing:0px;fill:#b5223b;fill-opacity:1;stroke-width:0.75"
    x="12.712918"
-   y="750.03528"
+   y="761.28528"
    id="text2501-4-9"
    transform="scale(1,-1)"><tspan
      sodipodi:role="line"
      id="tspan2499-6-9"
      x="12.712918"
-     y="750.03528"
+     y="761.28528"
      style="font-weight:bold;font-size:18px;fill:#b5223b;fill-opacity:1;stroke-width:0.75">females</tspan></text>
 
 
