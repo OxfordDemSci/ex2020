@@ -15,10 +15,7 @@ config <- yaml::read_yaml(glue::glue('{wd}/cfg/config.yaml'))
 cnst <- list()
 cnst <- within(cnst, {
   regions_for_analysis = config$regions_for_all_cause_analysis
-  regions_for_cause_of_death_analysis =c(
-    'BE', 'CH', 'CL', 'CZ', 'DE', 'DK', 'ES', 'FR', 'GB-EAW', 'GB-SCT',
-     'NL', 'PT', 'SI','IT'
-  )
+  regions_for_cause_of_death_analysis = config$regions_for_covid_cause_analysis
   path_out = glue('{wd}/out')
   path_tmp = glue('{wd}/tmp')
 })
