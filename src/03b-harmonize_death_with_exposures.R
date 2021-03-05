@@ -190,12 +190,7 @@ dat$stmf_harmonized_labels <-
     # convert age variables to numeric
     age_start = as.numeric(age_start),
     # if open age group, code width as Inf
-    age_width = as.numeric(ifelse(age_width == '+', 'Inf', age_width)),
-    # EXCEPTION for Portugal where the open age group is wrongly
-    # coded in the input data
-    age_width = as.numeric(ifelse(
-      region_iso == 'PT' & year < 2020 & age_start == 90,
-      'Inf', age_width))
+    age_width = as.numeric(ifelse(age_width == '+', 'Inf', age_width))
   ) %>%
   select(region_iso, sex, year, everything(), -region_code_stmf)
 
