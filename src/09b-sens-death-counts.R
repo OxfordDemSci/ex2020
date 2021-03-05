@@ -54,11 +54,11 @@ df_d %>%
     scale_shape_manual(values = c(1, 16), guide = NULL)+
     scale_x_continuous(labels = c("2015", "'16", "'17", "'18", "'19"))+
     scale_y_continuous(trans = "log")+
-    coord_cartesian(ylim = c(.95, 1.03))+
+    coord_cartesian(ylim = c(.96, 1.05))+
     facet_wrap(~name, ncol = 7)+
     theme_minimal(base_family = font_rc)+
     theme(
-        legend.position = c(.9, .07),
+        legend.position = c(.93, .07),
         panel.grid.minor = element_blank(),
         panel.spacing.x = unit(1, "lines")
     )+
@@ -117,7 +117,7 @@ df_d_a %>%
     facet_wrap(~name, ncol = 7)+
     theme_minimal(base_family = font_rc)+
     theme(
-        legend.position = c(.9, .07),
+        legend.position = c(.93, .07),
         panel.grid.minor = element_blank(),
         panel.spacing.x = unit(1, "lines")
     )+
@@ -144,7 +144,7 @@ df_d_a %>%
     facet_wrap(~name, ncol = 7)+
     theme_minimal(base_family = font_rc)+
     theme(
-        legend.position = c(.9, .07),
+        legend.position = c(.93, .07),
         panel.grid.minor = element_blank(),
         panel.spacing.x = unit(1, "lines")
     )+

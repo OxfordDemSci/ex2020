@@ -68,7 +68,7 @@ ex_comp %>%
     facet_wrap(~name, ncol = 7)+
     theme_minimal(base_family = font_rc)+
     theme(
-        legend.position = c(.9, .07),
+        legend.position = c(.93, .07),
         panel.grid.minor = element_blank(),
         panel.spacing.x = unit(1, "lines")
     )+
