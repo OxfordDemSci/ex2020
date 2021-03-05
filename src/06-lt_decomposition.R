@@ -17,7 +17,7 @@ cnst <- within(cnst, {
   regions_for_analysis = config$regions_for_all_cause_analysis
   regions_for_cause_of_death_analysis =c(
     'BE', 'CH', 'CL', 'CZ', 'DE', 'DK', 'ES', 'FR', 'GB-EAW', 'GB-SCT',
-     'NL', 'PT', 'SI'
+     'NL', 'PT', 'SI','IT'
   )
   path_out = glue('{wd}/out')
   path_tmp = glue('{wd}/tmp')
