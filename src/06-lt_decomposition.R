@@ -61,7 +61,7 @@ life.expectancy.fun  <-
     qx = 1-px
     lx = head(cumprod(c(1, px)), -1)
     dx = c(-diff(lx), tail(lx, 1))
-    Lx = dx/mx
+    Lx = ifelse(mx==0, lx*nx, dx/mx)
     Tx = rev(cumsum(rev(Lx)))
     ex = Tx/lx
 
