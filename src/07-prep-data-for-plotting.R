@@ -53,7 +53,7 @@ saveRDS(ids, glue('{wd}/out/ids.rds'))
 # df_lt <- read_rds("{wd}/out/lt_output_85.rds" %>% glue)
 # UPD  2021-03-05 ------------------------------
 # Temp patch for Sweden
-df_lt <- read_rds("{wd}/out/lt_output_85_patched.rds" %>% glue)
+df_lt <- read_rds("{wd}/out/lt_output_85.rds" %>% glue)
 
 
 ex_diff <- df_lt %>%
