@@ -62,8 +62,6 @@ lt1x1 <- bind_rows(
     f = path(hmdpath, "lt_female", "fltper_1x1") %>% fread_hmd_dir(),
     m = path(hmdpath, "lt_male", "mltper_1x1") %>% fread_hmd_dir(),
     .id = "sex"
-) %>%
-    # for the size of the dataset, only filter data since 2000
-    filter(year %>% is_weakly_greater_than(2000))
+)
 
 saveRDS(lt1x1, file = glue("{wd}/dat/hmdhfd/lt-1x1.rds"), compress = "xz")
