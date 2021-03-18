@@ -75,32 +75,32 @@ df20 %>%
     ggplot()+
     geom_hline(
         data = . %>% distinct(row, col),
-        aes(yintercept = 0), color = "#dfff00", size = .2
+        aes(yintercept = 0), color = "#ffea00", size = .5
     )+
     # geom_ribbon(
     #     data = df00 %>% filter(sex == "m"),
     #     aes(x = year, ymin = -1, ymax = 1),
     #     fill = "#dfff00", alpha = .1
     # )+
-    geom_col(aes(year, e0_diff), fill = "#64B6EEFF", width = 1)+
+    geom_col(aes(year, e0_diff), fill = "#64B6EEFF", width = 1.5)+
     geom_col(
         data = df00 %>% filter(sex == "m"),
         aes(year, e0_diff),fill = "#777777", width = 1
     )+
     geom_segment(
         aes(y = e0_diff, yend = e0_diff, x = year_first, xend = 2020),
-        color = "#64B6EEFF", size = .2
+        color = "#64B6EEFF", size = .3
     )+
     # mark outlier years
     geom_point(
-        data = df00 %>% filter(sex == "m") %>% filter(e0_diff > 5),
-        aes(x = year, y = 4.96),
-        shape = 45, size = 2, color = "#dfff00"
+        data = df00 %>% filter(sex == "m") %>% filter(e0_diff > 3),
+        aes(x = year, y = 2.98),
+        shape = 45, size = 2, color = "#ffea00"
     )+
     geom_point(
-        data = df00 %>% filter(sex == "m") %>% filter(e0_diff < -5),
-        aes(x = year, y = -4.96),
-        shape = 45, size = 2, color = "#dfff00"
+        data = df00 %>% filter(sex == "m") %>% filter(e0_diff < -3),
+        aes(x = year, y = -2.98),
+        shape = 45, size = 2, color = "#ffea00"
     )+
     facet_grid(row~col, scales = "free_x", space="free")+
     scale_x_continuous(
@@ -109,7 +109,7 @@ df20 %>%
     )+
     scale_y_continuous(breaks = seq(-4, 4, 2), position = "right")+
 
-    coord_cartesian(ylim = c(-5, 5), expand = F)+
+    coord_cartesian(ylim = c(-3, 3), expand = F)+
     theme_minimal(base_family = font_rc)+
     theme(
         panel.grid.minor = element_blank(),
@@ -125,7 +125,7 @@ df20 %>%
         fill = "Change e0, years"
     )+
     geom_text(
-        aes(label = name, y = 4.9, x = year),
+        aes(label = name, y = 2.9, x = year),
         size = 3, hjust = 1, vjust = 1,
         family = font_rc
     )+
@@ -164,31 +164,31 @@ df20 %>%
     ggplot()+
     geom_hline(
         data = . %>% distinct(row, col),
-        aes(yintercept = 0), color = "#18ffff", size = .2
+        aes(yintercept = 0), color = "#18ffff", size = .5
     )+
     # geom_ribbon(
     #     data = df00 %>% filter(sex == "f"),
     #     aes(x = year, ymin = -1, ymax = 1),
     #     fill = "#18ffff", alpha = .1
     # )+
-    geom_col(aes(year, e0_diff), fill = "#B5223BFF", width = 1)+
+    geom_col(aes(year, e0_diff), fill = "#B5223BFF", width = 1.5)+
     geom_col(
         data = df00 %>% filter(sex == "f"),
         aes(year, e0_diff),fill = "#777777", width = 1
     )+
     geom_segment(
         aes(y = e0_diff, yend = e0_diff, x = year_first, xend = 2020),
-        color = "#B5223BFF", size = .2
+        color = "#B5223BFF", size = .25
     )+
     # mark outlier years
     geom_point(
-        data = df00 %>% filter(sex == "f") %>% filter(e0_diff > 5),
-        aes(x = year, y = 4.96),
+        data = df00 %>% filter(sex == "f") %>% filter(e0_diff > 3),
+        aes(x = year, y = 2.98),
         shape = 45, size = 2, color = "#18ffff"
     )+
     geom_point(
-        data = df00 %>% filter(sex == "f") %>% filter(e0_diff < -5),
-        aes(x = year, y = -4.96),
+        data = df00 %>% filter(sex == "f") %>% filter(e0_diff < -3),
+        aes(x = year, y = -2.98),
         shape = 45, size = 2, color = "#18ffff"
     )+
     facet_grid(row~col, scales = "free_x", space="free")+
@@ -198,7 +198,7 @@ df20 %>%
     )+
     scale_y_continuous(breaks = seq(-4, 4, 2), position = "right")+
 
-    coord_cartesian(ylim = c(-5, 5), expand = F)+
+    coord_cartesian(ylim = c(-3, 3), expand = F)+
     theme_minimal(base_family = font_rc)+
     theme(
         panel.grid.minor = element_blank(),
@@ -214,7 +214,7 @@ df20 %>%
         fill = "Change e0, years"
     )+
     geom_text(
-        aes(label = name, y = 4.9, x = year),
+        aes(label = name, y = 2.9, x = year),
         size = 3, hjust = 1, vjust = 1,
         family = font_rc
     )+
