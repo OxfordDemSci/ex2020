@@ -15,7 +15,9 @@ library(cowplot)
 
 ids <- readRDS("{wd}/out/ids.rds" %>% glue)
 lt1x1 <- readRDS("{wd}/dat/hmdhfd/lt-1x1.rds" %>% glue)
+ex_diff_2020 <- read_rds("{wd}/out/df_ex.rds" %>% glue)
 
+# small dataset with either the first year or 1900
 hmd_start <- lt1x1 %>%
     group_by(country) %>%
     summarise(
@@ -29,73 +31,217 @@ hmd_start <- lt1x1 %>%
     )
 
 # add 2020
-ex_diff_2020 <- read_rds("{wd}/out/df_ex.rds" %>% glue) %>%
-    filter(age == 0, sex == "Male") %>%
-    transmute(name, country = code_hmd, sex, year, e0_diff = ex_diff, ex) %>%
-    left_join(hmd_start)
+df20 <- read_rds("{wd}/out/df_ex.rds" %>% glue) %>%
+    filter(age == 0) %>%
+    transmute(name, country = code_hmd, sex, year, e0_diff = ex_diff) %>%
+    left_join(hmd_start) %>%
+    # arrange countries by decreasing length of the time series
+    group_by(sex) %>%
+    arrange((year - year_first)) %>%
+    mutate(
+        country = country %>% as_factor %>% fct_inorder(),
+        name = name %>% as_factor %>% fct_inorder()
+    ) %>%
+    # create facet positioning variables on a 7x5 canvas
+    mutate(
+        row = name %>%
+            lvls_revalue(
+                new_levels = 1:7 %>% rep(4) %>% paste %>% tail(27)
+            ),
+        col = name %>%
+            lvls_revalue(
+                new_levels = 1:4 %>% rep(each = 7) %>% paste %>% tail(27)
+            )
+    ) %>%
+    ungroup()
+
+# long series
+df00 <- lt1x1 %>%
+    filter(age == 0,  year > 1899) %>%
+    group_by(country, sex) %>%
+    transmute(
+        year,
+        e0_diff = ex - lag(ex)
+    ) %>%
+    drop_na() %>%
+    ungroup() %>%
+    right_join(df20 %>% distinct(country, row, col))
 
 
 # e0 yearly diff ----------------------------------------------------------
 
-lt1x1 %>%
-    right_join(ids, c("country" = "code_hmd")) %>%
-    filter(
-        age == 0,
-        sex == "m"
-    ) %>%
-    drop_na() %>%
-    mutate(e0_diff = ex - lag(ex)) %>%
-    group_by(country) %>%
-    filter(!year == min(year), year > 1899) %>%
-    ungroup() %>%
-    ggplot(aes(year, e0_diff))+
-    geom_hline(yintercept = 0, color = 5, size = .2)+
-    geom_ribbon(
-        aes(xmin = -Inf, xmax = Inf, ymin = -1, ymax = 1),
-        fill = 5, alpha = .1
+df20 %>%
+    filter(sex == "Male") %>%
+    ggplot()+
+    geom_hline(
+        data = . %>% distinct(row, col),
+        aes(yintercept = 0), color = "#dfff00", size = .2
     )+
-    geom_col(fill = "#777777", width = 1)+
-    geom_col(data = ex_diff_2020, fill = 2)+
+    # geom_ribbon(
+    #     data = df00 %>% filter(sex == "m"),
+    #     aes(x = year, ymin = -1, ymax = 1),
+    #     fill = "#dfff00", alpha = .1
+    # )+
+    geom_col(aes(year, e0_diff), fill = "#64B6EEFF", width = 1)+
+    geom_col(
+        data = df00 %>% filter(sex == "m"),
+        aes(year, e0_diff),fill = "#777777", width = 1
+    )+
     geom_segment(
-        data = ex_diff_2020,
         aes(y = e0_diff, yend = e0_diff, x = year_first, xend = 2020),
-        color = 2, size = .2
+        color = "#64B6EEFF", size = .2
     )+
     # mark outlier years
     geom_point(
-        data = . %>% filter(e0_diff > 5),
-        aes(y = 4.96),
-        shape = 45, size = 2, color = 5
+        data = df00 %>% filter(sex == "m") %>% filter(e0_diff > 5),
+        aes(x = year, y = 4.96),
+        shape = 45, size = 2, color = "#dfff00"
     )+
-    facet_wrap(~name, ncol = 4)+
+    geom_point(
+        data = df00 %>% filter(sex == "m") %>% filter(e0_diff < -5),
+        aes(x = year, y = -4.96),
+        shape = 45, size = 2, color = "#dfff00"
+    )+
+    facet_grid(row~col, scales = "free_x", space="free")+
     scale_x_continuous(
         breaks = c(1900, 1918, 1939, 1945, 1965, 1990, 2010),
         labels = c("1900", "'18", "", "'45", "'65", "'90", "2010")
     )+
-    scale_y_continuous(breaks = seq(-4, 4, 2))+
+    scale_y_continuous(breaks = seq(-4, 4, 2), position = "right")+
 
     coord_cartesian(ylim = c(-5, 5), expand = F)+
     theme_minimal(base_family = font_rc)+
     theme(
         panel.grid.minor = element_blank(),
+        panel.spacing.x = unit(.75, "lines"),
+        strip.text = element_blank(),
+        strip.background = element_blank(),
         legend.position = c(.88, .04),
         plot.title = element_text(family = "Roboto Slab")
     )+
     labs(
         x = NULL,
-        y = "Yearly change in male life expectancy at birth",
+        y = "Yearly change in life expectancy at birth",
         fill = "Change e0, years"
     )+
     geom_text(
-        data = tibble(name = "Austria", year = 1990, e0_diff = -2),
+        aes(label = name, y = 4.9, x = year),
+        size = 3, hjust = 1, vjust = 1,
+        family = font_rc
+    )+
+    geom_text(
+        data = tibble(row = 7, col = 4, year = 1990, e0_diff = -2),
+        aes(year, e0_diff),
         label = "Change in 2020", size = 3, family = font_rc,
-        color = 2, fontface = 2
+        color = "#64B6EEFF", fontface = 2
+    )+
+    # annotate sex in the free space
+    # first, createe the white background
+    geom_rect(
+        data = tibble(row = 1, col = 1, year = 2000),
+        aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf),
+        color = NA, fill = "#ffffff"
+    )+
+    geom_text(
+        data = tibble(row = 1, col = 1, year = 1990, e0_diff = 0),
+        aes(label = "MALES", year, e0_diff),
+        size = 5, family = font_rc,
+        color = "#64B6EEFF", fontface = 2
     )
 
-p_diffs <- last_plot()
+
+diff_m <- last_plot()
+
+ggsave(
+    "{wd}/out/sens/hmd-yearly-e0-diff-m.pdf" %>% glue,
+    diff_m, width = 6, height = 8, device = cairo_pdf
+)
+
+# the same for females
+
+df20 %>%
+    filter(sex == "Female") %>%
+    ggplot()+
+    geom_hline(
+        data = . %>% distinct(row, col),
+        aes(yintercept = 0), color = "#18ffff", size = .2
+    )+
+    # geom_ribbon(
+    #     data = df00 %>% filter(sex == "f"),
+    #     aes(x = year, ymin = -1, ymax = 1),
+    #     fill = "#18ffff", alpha = .1
+    # )+
+    geom_col(aes(year, e0_diff), fill = "#B5223BFF", width = 1)+
+    geom_col(
+        data = df00 %>% filter(sex == "f"),
+        aes(year, e0_diff),fill = "#777777", width = 1
+    )+
+    geom_segment(
+        aes(y = e0_diff, yend = e0_diff, x = year_first, xend = 2020),
+        color = "#B5223BFF", size = .2
+    )+
+    # mark outlier years
+    geom_point(
+        data = df00 %>% filter(sex == "f") %>% filter(e0_diff > 5),
+        aes(x = year, y = 4.96),
+        shape = 45, size = 2, color = "#18ffff"
+    )+
+    geom_point(
+        data = df00 %>% filter(sex == "f") %>% filter(e0_diff < -5),
+        aes(x = year, y = -4.96),
+        shape = 45, size = 2, color = "#18ffff"
+    )+
+    facet_grid(row~col, scales = "free_x", space="free")+
+    scale_x_continuous(
+        breaks = c(1900, 1918, 1939, 1945, 1965, 1990, 2010),
+        labels = c("1900", "'18", "", "'45", "'65", "'90", "2010")
+    )+
+    scale_y_continuous(breaks = seq(-4, 4, 2), position = "right")+
+
+    coord_cartesian(ylim = c(-5, 5), expand = F)+
+    theme_minimal(base_family = font_rc)+
+    theme(
+        panel.grid.minor = element_blank(),
+        panel.spacing.x = unit(.75, "lines"),
+        strip.text = element_blank(),
+        strip.background = element_blank(),
+        legend.position = c(.88, .04),
+        plot.title = element_text(family = "Roboto Slab")
+    )+
+    labs(
+        x = NULL,
+        y = "Yearly change in life expectancy at birth",
+        fill = "Change e0, years"
+    )+
+    geom_text(
+        aes(label = name, y = 4.9, x = year),
+        size = 3, hjust = 1, vjust = 1,
+        family = font_rc
+    )+
+    geom_text(
+        data = tibble(row = 7, col = 4, year = 1990, e0_diff = -2),
+        aes(year, e0_diff),
+        label = "Change in 2020", size = 3, family = font_rc,
+        color = "#B5223BFF", fontface = 2
+    )+
+    # annotate sex in the free space
+    # first, createe the white background
+    geom_rect(
+        data = tibble(row = 1, col = 1, year = 2000),
+        aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf),
+        color = NA, fill = "#ffffff"
+    )+
+    geom_text(
+        data = tibble(row = 1, col = 1, year = 1990, e0_diff = 0),
+        aes(label = "FEMALES", year, e0_diff),
+        size = 5, family = font_rc,
+        color = "#B5223BFF", fontface = 2
+    )
+
+diff_f <- last_plot()
 
 
 ggsave(
-    "{wd}/out/sens/hmd-yearly-e0-diff.pdf", p_diffs,
-    width = 8, height = 8, device = cairo_pdf
+    "{wd}/out/sens/hmd-yearly-e0-diff-f.pdf" %>% glue,
+    diff_f, width = 6, height = 8, device = cairo_pdf
 )
