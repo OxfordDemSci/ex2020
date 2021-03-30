@@ -289,18 +289,20 @@ walk(c(0, 60), ~{
       .id = 'open_age_group'
     ) %>%
     ggplot(aes(x = year, y = ex, color = sex)) +
-    geom_point(aes(shape = open_age_group)) +
-    geom_line(
-      aes(y = ex_hmd_estimate), linetype = 2,
-      data =
-        dat$lt_input_85_sub %>%
-        filter(age_start == .x)
-    ) +
     geom_segment(
-      aes(x = 2015, xend = 2019, y = ex_wpp_estimate, yend = ex_wpp_estimate),
+      aes(x = 2015, xend = 2019, y = ex_wpp_estimate,
+          yend = ex_wpp_estimate),
+      size = 1, alpha = 0.5,
       data =
         dat$lt_input_85_sub %>%
         filter(age_start == .x, year == 2018)
+    ) +
+    geom_point(aes(shape = open_age_group)) +
+    geom_line(
+      aes(y = ex_hmd_estimate),
+      data =
+        dat$lt_input_85_sub %>%
+        filter(age_start == .x)
     ) +
     facet_wrap(~region_iso, scales = 'free_y') +
     scale_x_continuous(
@@ -311,8 +313,10 @@ walk(c(0, 60), ~{
     scale_shape_manual(values = c(`85+` = 1, `100+` = 3)) +
     fig_spec$MyGGplotTheme(panel_border = TRUE, grid = 'xy', scaler = 0.8) +
     labs(
-      title = glue('Estimated yearly life expectancy at age {.x} compared with HMD (dashed line) and WPP (solid line) 5 year average estimates'),
-      y = glue('e{.x}')
+      title = glue('Estimated yearly life expectancy at age {.x} compared with HMD (thin line) and WPP (bold line) 5 year average estimates'),
+      y = glue('e{.x}'),
+      shape = 'Open age group',
+      color = 'Sex'
     )
 })
 fig$e0_consistency_check

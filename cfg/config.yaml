@@ -64,29 +64,29 @@ regions_for_all_cause_analysis: [
     'GB-EAW',
     'GB-NIR',
     'GB-SCT',
-    #'GR', # missing weeks
-    'HR', #
+    'GR', # new!
+    'HR',
     'HU',
     #'IL', # coarse age groups
-    'IS', #
+    'IS',
     'IT',
     #'KR', # coarse age group
     'LT',
     #'LU', # adolescent hazard profiles in 2019 very different from 2020
     #'LV', # adolescent hazard profiles in 2019 very different from 2020
     'NL',
-    'NO', #
+    'NO',
     #'NZ', # coarse age groups
     'PL',
     'PT',
-    #'RU', # missing year 2021
+    #'RU', # missing year 2020
     'SE',
     'SI',
-    #'SK', # missing weeks
-    #'TW', # missing weeks
+    'SK', # new!
+    #'TW', # signs for under-registration of deaths in 2020
     'US'
 ]
 regions_for_covid_cause_analysis: [
     'BE', 'CH', 'CL', 'CZ', 'DE', 'DK', 'ES', 'FR', 'GB-EAW', 'GB-SCT',
-    'IT', 'NL', 'PT', 'SI'
+    'GR', 'IT', 'NL', 'PT', 'SI'
 ]

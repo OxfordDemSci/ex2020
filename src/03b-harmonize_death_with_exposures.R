@@ -380,7 +380,7 @@ dat$all_ready_for_ungroup <-
 # prepare midyear population for pclm exposures
 dat$midyearpop_for_pclm <- left_join(dat$skeleton, dat$midyearpop)
 
-dat$ungrouped <-
+dat$ungrouped_by_unique_age_pattern <-
   dat$all_ready_for_ungroup %>%
   group_by(region_iso, sex, year, agegroup_pattern) %>%
   group_modify(~{
@@ -470,7 +470,7 @@ dat$ungrouped <-
 # age patterns observed within a year and derive some
 # data quality metrics
 dat$ungrouped <-
-  dat$ungrouped %>%
+  dat$ungrouped_by_unique_age_pattern %>%
   group_by(region_iso, sex, year, age_start) %>%
   summarise(
     nweeksyear = nweeksyear[1],
@@ -508,19 +508,38 @@ dat$death <-
 
 # Diagnostic plots ------------------------------------------------
 
+dat$all_ready_for_ungroup
+
 walk(cnst$region_lookup$region_code_iso3166_2, ~{
-  fig[[glue('death_pclm_{.x}')]] <<-
-    dat$ungrouped %>%
+  grouped <-
+    dat$all_ready_for_ungroup %>%
     filter(region_iso == .x) %>%
-    ggplot(aes(x = age_start, y = deaths/population_py, color = sex)) +
+    arrange(region_iso, sex, year, agegroup_pattern, age_start) %>%
+    mutate(
+      age_width = c(diff(age_start), -1),
+      age_width = ifelse(age_width < 0, cnst$pclm_highest_age-age_start, age_width),
+      deaths = deaths/age_width
+    )
+  ungrouped <-
+    dat$ungrouped_by_unique_age_pattern %>%
+    filter(region_iso == .x)
+  fig$pclm[[glue('death_pclm_{.x}')]] <<-
+    ungrouped %>%
+    ggplot(aes(x = age_start, y = deaths, color = sex)) +
+    geom_rect(aes(
+      xmin = age_start, xmax = age_start+age_width,
+      ymin = 0, ymax = deaths,
+      fill = sex
+    ),
+    alpha = 0.4, color = NA,
+    data = grouped) +
     geom_line() +
     facet_grid(year ~ agegroup_pattern) +
     theme_minimal() +
-    scale_x_continuous() +
     scale_color_manual(values = fig_spec$sex_colors) +
-    labs(subtitle = glue('PCLM ungroup of death counts in {.x}')) +
-    fig_spec$MyGGplotTheme() +
-    scale_y_log10()
+    scale_fill_manual(values = fig_spec$sex_colors) +
+    labs(subtitle = glue('PCLM estimated singe age death counts in {.x}')) +
+    fig_spec$MyGGplotTheme()
 })
 
 # diagnostic plots for year to year age distribution of deaths
@@ -583,3 +602,11 @@ fig_spec$ExportFigure(
 fig_spec$ExportFigure(
   fig$hazard_pclm, path = cnst$path_fig, scale = 1.5
 )
+
+library(gridExtra)
+ggsave(
+  filename = glue('{cnst$path_fig}/pclm_death_ungroup_diagnostics.pdf'), 
+  plot = marrangeGrob(fig$pclm, nrow=1, ncol=1), 
+  width = 10, height = 8
+)
+

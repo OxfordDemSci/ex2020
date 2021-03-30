@@ -76,7 +76,7 @@ tab$total_deaths_quality <-
     include_in_covid_cause_analysis = 'Covid analysis'
   ) %>%
   cols_hide('region_iso') %>%
-  tab_source_note('Source data retreived 2021-03-05.')
+  tab_source_note('Source data retreived 2021-03-29.')
 
 gtsave(
   tab$total_deaths_quality, filename = 'tab-data_quality_all_cause_deaths.html',
@@ -100,7 +100,8 @@ tab$covid_deaths_quality <-
     death_covid_date = 'Latest COVID death updates'
   )
 
-# Coverage --------------------------------------------------------
+
+# Check STMF data coverage ----------------------------------------
 
 stmf <- readRDS(glue('{wd}/dat/stmf/stmf.rds'))
 
@@ -128,5 +129,15 @@ stmf %>%
   facet_wrap(~PopCode) +
   theme_dark()
 
+# Check STMF age grouping patterns --------------------------------
 
-# Export ----------------------------------------------------------
+dat$stmf_age_pattern <-
+  stmf %>%
+  group_by(PopCode, Year, Sex, Week) %>%
+  summarise(age_pattern = paste0(Age, collapse = '-')) %>%
+  group_by(PopCode, Year, Sex, age_pattern) %>%
+  summarise(n = n()) %>%
+  ungroup() %>%
+  pivot_wider(names_from = Sex, values_from = n)
+
+#dat$stmf_age_pattern %>% View()

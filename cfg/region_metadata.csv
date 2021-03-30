@@ -16,7 +16,7 @@ FR,FRA,FR,FRA,FRATNP,iso_week_date,FRATNP,250,France,France,0,France,n,Europe
 GB-EAW,GBR-EAW,GB,GBR,GBRTENW,iso_week_date,GBRTENW,.,England and Wales,England and Wales,1,Great Britain,n,Europe
 GB-NIR,GBR-NIR,GB,GBR,GBR_NIR,iso_week_date,GBR_NIR,.,Northern Ireland,Northern Ireland,1,Great Britain,n,Europe
 GB-SCT,GBR-SCT,GB,GBR,GBR_SCO,iso_week_date,GBR_SCO,.,Scotland,Scotland,1,Great Britain,n,Europe
-GR,GRC,GR,GRC,GRC,? iso_week_date,GRC,300,Greece,Greece,0,Greece,n,Europe
+GR,GRC,GR,GRC,GRC,iso_week_date,GRC,300,Greece,Greece,0,Greece,n,Europe
 HR,HRV,HR,HRV,HRV,iso_week_date,HRV,191,Croatia,Croatia,0,Croatia,n,Europe
 HU,HUN,HU,HUN,HUN,iso_week_date,HUN,348,Hungary,Hungary,0,Hungary,n,Europe
 IL,ISR,IL,ISR,ISR,iso_week_date,ISR,376,Israel,Israel,0,Israel,n,Asia
