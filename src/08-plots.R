@@ -39,7 +39,7 @@ df_ex %>%
     ) %>%
     mutate(age = age %>% as_factor()) %>%
     ggplot(aes(ex, name, color = sex, shape = year, size = year))+
-    geom_hline(yintercept = seq(2, 26, 2), size = 5, color = "#eaeaea")+
+    geom_hline(yintercept = seq(2, 28, 2), size = 5, color = "#eaeaea")+
     geom_point()+
     scale_shape_manual(values = c(124, 43, 16))+
     scale_size_manual(values = c(4, 4, 1.5))+
@@ -81,7 +81,7 @@ df_ex %>%
             fct_reorder(rank_d0m20)
     ) %>%
     ggplot(aes(y = name))+
-    geom_hline(yintercept = seq(2, 26, 2), size = 5, color = "#eaeaea")+
+    geom_hline(yintercept = seq(2, 28, 2), size = 5, color = "#eaeaea")+
     geom_vline(xintercept = 0, size = 2, color = "#bababa")+
     geom_point(aes(x = ex_diff, color = sex, shape = sex), size = 2)+
     scale_color_manual(values = c("#B5223BFF", "#64B6EEFF"))+
