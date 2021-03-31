@@ -55,7 +55,7 @@ df_d %>%
     scale_x_continuous(labels = c("2015", "'16", "'17", "'18", "'19"))+
     scale_y_continuous(trans = "log")+
     coord_cartesian(ylim = c(.96, 1.05))+
-    facet_wrap(~name, ncol = 7)+
+    facet_wrap(~name, ncol = 6)+
     theme_minimal(base_family = font_rc)+
     theme(
         legend.position = c(.93, .07),
@@ -68,8 +68,8 @@ df_d %>%
     )
 
 ggsave(
-    "{wd}/out/sens/death-totals-our-hmd.pdf" %>% glue,
-    width = 8, height = 6, device = cairo_pdf
+    "{wd}/out/sens/fig-S3-death-totals-our-hmd.pdf" %>% glue,
+    width = 8, height = 7, device = cairo_pdf
 )
 
 

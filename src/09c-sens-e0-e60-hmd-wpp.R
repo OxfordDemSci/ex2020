@@ -65,7 +65,7 @@ ex_comp %>%
     )+
     scale_x_continuous(labels = c("'15", "'16", "'17", "'18", "'19", "'20"))+
     # scale_y_continuous(breaks = 0:100)+
-    facet_wrap(~name, ncol = 7)+
+    facet_wrap(~name, ncol = 6)+
     theme_minimal(base_family = font_rc)+
     theme(
         legend.position = c(.93, .07),
@@ -79,8 +79,8 @@ ex_comp %>%
     )
 
 ggsave(
-    "{wd}/out/sens/ex-comp.pdf" %>% glue,
-    width = 8, height = 6, device = cairo_pdf
+    "{wd}/out/sens/fig-S2-ex-comp.pdf" %>% glue,
+    width = 8, height = 7, device = cairo_pdf
 )
 
 # # separate for sexes

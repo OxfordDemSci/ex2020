@@ -46,11 +46,11 @@ df20 <- read_rds("{wd}/out/df_ex.rds" %>% glue) %>%
     mutate(
         row = name %>%
             lvls_revalue(
-                new_levels = 1:7 %>% rep(4) %>% paste %>% tail(27)
+                new_levels = 1:6 %>% rep(5) %>% paste %>% tail(29)
             ),
         col = name %>%
             lvls_revalue(
-                new_levels = 1:4 %>% rep(each = 7) %>% paste %>% tail(27)
+                new_levels = 1:5 %>% rep(each =6) %>% paste %>% tail(29)
             )
     ) %>%
     ungroup()
@@ -130,7 +130,7 @@ df20 %>%
         family = font_rc
     )+
     geom_text(
-        data = tibble(row = 7, col = 4, year = 1990, e0_diff = -2),
+        data = tibble(row = 6, col = 5, year = 1990, e0_diff = -2),
         aes(year, e0_diff),
         label = "Change in 2020", size = 3, family = font_rc,
         color = "#64B6EEFF", fontface = 2
@@ -145,7 +145,7 @@ df20 %>%
     geom_text(
         data = tibble(row = 1, col = 1, year = 1990, e0_diff = 0),
         aes(label = "MALES", year, e0_diff),
-        size = 5, family = font_rc,
+        size = 5, family = font_rc, angle = 90,
         color = "#64B6EEFF", fontface = 2
     )
 
@@ -153,8 +153,8 @@ df20 %>%
 diff_m <- last_plot()
 
 ggsave(
-    "{wd}/out/sens/hmd-yearly-e0-diff-m.pdf" %>% glue,
-    diff_m, width = 6, height = 8, device = cairo_pdf
+    "{wd}/out/sens/fig-s4b-hmd-yearly-e0-diff-m.pdf" %>% glue,
+    diff_m, width = 7, height = 7, device = cairo_pdf
 )
 
 # the same for females
@@ -219,7 +219,7 @@ df20 %>%
         family = font_rc
     )+
     geom_text(
-        data = tibble(row = 7, col = 4, year = 1990, e0_diff = -2),
+        data = tibble(row = 6, col = 5, year = 1990, e0_diff = -2),
         aes(year, e0_diff),
         label = "Change in 2020", size = 3, family = font_rc,
         color = "#B5223BFF", fontface = 2
@@ -234,7 +234,7 @@ df20 %>%
     geom_text(
         data = tibble(row = 1, col = 1, year = 1990, e0_diff = 0),
         aes(label = "FEMALES", year, e0_diff),
-        size = 5, family = font_rc,
+        size = 5, family = font_rc, angle = 90,
         color = "#B5223BFF", fontface = 2
     )
 
@@ -242,6 +242,6 @@ diff_f <- last_plot()
 
 
 ggsave(
-    "{wd}/out/sens/hmd-yearly-e0-diff-f.pdf" %>% glue,
-    diff_f, width = 6, height = 8, device = cairo_pdf
+    "{wd}/out/sens/fig-s4a-hmd-yearly-e0-diff-f.pdf" %>% glue,
+    diff_f, width = 7, height = 7, device = cairo_pdf
 )

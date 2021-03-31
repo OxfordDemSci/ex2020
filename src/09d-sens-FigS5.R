@@ -115,7 +115,7 @@ df_dec_age %>%
     y = "Age groups"
   )
 
-three_f <- last_plot()
+s5_f <- last_plot()
 
 
 df_dec_age %>%
@@ -146,9 +146,9 @@ df_dec_age %>%
     y = "Age groups"
   )
 
-three_m <- last_plot()
+s5_m <- last_plot()
 
-three <- three_f / three_m
+s5 <- s5_f / s5_m
 
-ggsave("{wd}/out/sens/fig-S3-decomp.pdf" %>% glue, three, width = 10, height = 11, device = cairo_pdf)
+ggsave("{wd}/out/sens/fig-S5-decomp.pdf" %>% glue, s5, width = 10, height = 11, device = cairo_pdf)
 
