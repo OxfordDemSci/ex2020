@@ -143,7 +143,7 @@ df_dec_age %>%
         panel.grid.minor.y = element_blank(),
         panel.spacing = unit(.5, "lines"),
         strip.text = element_text(face = 2),
-        legend.position = c(.93, .13),
+        legend.position = c(.93, .1),
         axis.text.x = element_blank()
         # legend.background = element_rect(color = "#18ffff", size = 2),
         # plot.background = element_rect(color = "#eaeaea", size = 1)
@@ -179,7 +179,7 @@ df_dec_age %>%
         panel.grid.minor.y = element_blank(),
         panel.spacing = unit(.5, "lines"),
         strip.text = element_text(face = 2),
-        legend.position = c(.93, .1),
+        legend.position = c(.93, .07),
         # legend.background = element_rect(color = "#dfff00", size = 2),
         # plot.background = element_rect(color = "#eaeaea", size = 1)
     )+
