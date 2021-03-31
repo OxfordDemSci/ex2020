@@ -92,7 +92,7 @@ df_dec_age %>%
   ggplot(aes(ctb, age, fill = period))+
   geom_col()+
   geom_vline(xintercept = 0, size = .25, color = "#dfff00")+
-  facet_wrap(~name, ncol = 7, dir = "v")+
+  facet_wrap(~name, ncol = 6, dir = "v")+
   scale_fill_manual(
     values = c("#e91e63", "#38006b"),
     guide  = guide_legend(ncol = 1, reverse = TRUE)
@@ -107,7 +107,7 @@ df_dec_age %>%
     panel.grid.minor.y = element_blank(),
     panel.spacing = unit(.5, "lines"),
     strip.text = element_text(face = 2),
-    legend.position = c(.93, .1)
+    legend.position = c(.93, .07)
   )+
   labs(
     fill = "FEMALES",
@@ -138,7 +138,7 @@ df_dec_age %>%
     panel.grid.minor.y = element_blank(),
     panel.spacing = unit(.5, "lines"),
     strip.text = element_text(face = 2),
-    legend.position = c(.93, .1),
+    legend.position = c(.93, .07),
   )+
   labs(
     fill = "MALES",
@@ -150,5 +150,5 @@ three_m <- last_plot()
 
 three <- three_f / three_m
 
-ggsave("{wd}/out/sens/fig-S1.pdf" %>% glue, three, width = 10, height = 11, device = cairo_pdf)
+ggsave("{wd}/out/sens/fig-S3-decomp.pdf" %>% glue, three, width = 10, height = 11, device = cairo_pdf)
 
