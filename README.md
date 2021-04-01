@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/OxfordDemSci/ex2020/blob/master/ass/fig-1-wo2020-ann.png" width="1000"/>
+  <img src="https://github.com/OxfordDemSci/ex2020/blob/master/out/figs-png/fig-2-ann.png?raw=true" width="100%"/>
 </p>
 
 
