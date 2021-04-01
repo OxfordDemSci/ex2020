@@ -150,5 +150,5 @@ s5_m <- last_plot()
 
 s5 <- s5_f / s5_m
 
-ggsave("{wd}/out/sens/fig-S5-decomp.pdf" %>% glue, s5, width = 10, height = 11, device = cairo_pdf)
+ggsave("{wd}/out/sens/fig-S5-decomp.pdf" %>% glue, s5, width = 10, height = 14, device = cairo_pdf)
 
