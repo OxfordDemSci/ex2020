@@ -87,20 +87,25 @@ regions_for_all_cause_analysis: [
     'US'
 ]
 regions_for_covid_cause_analysis: [
-    'BE', 
-    'CH', 
-    'CL', 
-    'CZ', 
-    'DE', 
-    'DK', 
-    'ES', 
-    'FR', 
-    'GB-EAW', 
+    'BE',
+    'CH',
+    'CL',
+    'CZ',
+    'DE',
+    'DK',
+    'ES',
+    'FR',
+    'GB-EAW',
     'GB-SCT',
-    'GR', 
-    'IT', 
-    'NL', 
-    'PT', 
+    'GR',
+    'IT',
+    'NL',
+    'PT',
     'SI',
-    'GR' #new
+    'GR',
+    # added new 2021-05-26
+    'US',
+    'NO',
+    'HU',
+    'AT'
 ]

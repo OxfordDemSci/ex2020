@@ -43,7 +43,7 @@ writeBin(
   con = glue('{cnst$path_tmp}/coverage.zip')
 )
 
-# bind all .csv files in stmf zip archive into single file
+# unzip coverage data and read table
 dat$coverage <-
   unz(
     glue('{cnst$path_tmp}/coverage.zip'),

@@ -76,7 +76,7 @@ tab$total_deaths_quality <-
     include_in_covid_cause_analysis = 'Covid analysis'
   ) %>%
   cols_hide('region_iso') %>%
-  tab_source_note('Source data retreived 2021-03-29.')
+  tab_source_note('Source data retreived 2021-05-26.')
 
 gtsave(
   tab$total_deaths_quality, filename = 'tab-data_quality_all_cause_deaths.html',
