@@ -7,6 +7,7 @@ set.seed(1987)
 library(here); library(glue)
 library(tidyverse); library(yaml)
 library(patchwork)
+library(gt); library(openxlsx)
 
 # Constants -------------------------------------------------------
 
@@ -18,11 +19,12 @@ cnst <- within(cnst, {
   path_out = glue('{wd}/out')
   path_tmp = glue('{wd}/tmp')
   # number of Poisson life-table replicates
-  n_sim = 100
+  n_sim = 500
 })
 
 dat <- list()
 fig <- list()
+tab <- list()
 
 # Function --------------------------------------------------------
 
@@ -52,6 +54,8 @@ CalculateLifeTable <-
 
 # Data ------------------------------------------------------------
 
+# input data for life-table calculation
+# harmonized death counts and population exposures with open age group 100+
 dat$lt_input_100 <- readRDS(glue('{cnst$path_out}/lt_input.rds'))
 
 # Create open age group 85+ ---------------------------------------
@@ -87,21 +91,6 @@ dat$lt_input_100_sub <-
   dat$lt_input_100 %>%
   filter(region_iso %in% cnst$regions_for_analysis)
 
-# Create Poisson life-table replicates ----------------------------
-
-dat$lt_85_sim <-
-  dat$lt_input_85_sub %>%
-  filter(year >= 2019) %>%
-  expand_grid(id_sim = 1:cnst$n_sim) %>%
-  group_by(region_iso, sex, year, age_start) %>%
-  mutate(death_total_sim = rpois(cnst$n_sim, death_total)) %>%
-  arrange(region_iso, sex, year, age_start) %>%
-  group_by(id_sim, region_iso, sex, year) %>%
-  group_modify(~{
-    CalculateLifeTable(.x, age_start, age_width, death_total_sim, population_py)
-  }) %>%
-  ungroup()
-
 # Calculate annual life tables ------------------------------------
 
 # life-tables by region, sex, and year
@@ -126,10 +115,56 @@ dat$lt_85 <-
   }) %>%
   ungroup()
 
-# Analyze ex and hx changes ---------------------------------------
 
-# average yearly change in mx, ex 2015 to 2019
-dat$lt_avg_annual_change_pre2020 <-
+# Create Poisson life-table replicates ----------------------------
+
+# create life table replicates by region, sex, and year
+# based on repeatedly sampling death counts from a Poisson
+# distribution with mean equal to estimated mean from PCLM
+# decomposition
+dat$lt_85_sim <-
+  dat$lt_input_85_sub %>%
+  filter(year >= 2019) %>%
+  expand_grid(id_sim = 1:cnst$n_sim) %>%
+  group_by(region_iso, sex, year, age_start) %>%
+  mutate(death_total_sim = rpois(cnst$n_sim, death_total)) %>%
+  arrange(region_iso, sex, year, age_start) %>%
+  group_by(id_sim, region_iso, sex, year) %>%
+  group_modify(~{
+    CalculateLifeTable(.x, age_start, age_width, death_total_sim, population_py)
+  }) %>%
+  ungroup()
+
+# Assemble table of ex changes ------------------------------------
+
+# change in ex 2019 to 2020 (central estimates)
+dat$lt_ex_diff_mean <-
+  dat$lt_85 %>%
+  filter(year %in% c(2019, 2020)) %>%
+  select(region_iso, sex, year, x, mx, ex) %>%
+  pivot_wider(names_from = year, values_from = c(mx, ex)) %>%
+  mutate(
+    ex_diff_2020 = ex_2020 - ex_2019
+  )
+
+# 95% CI of change in ex 2019 to 2020
+dat$lt_ex_diff_ci <-
+  dat$lt_85_sim %>%
+  filter(year %in% c(2019, 2020)) %>%
+  select(id_sim, region_iso, sex, year, x, mx, ex) %>%
+  pivot_wider(names_from = year, values_from = c(mx, ex)) %>%
+  mutate(
+    ex_diff_2020 = ex_2020 - ex_2019
+  ) %>%
+  # summarise replications
+  group_by(region_iso, sex, x) %>%
+  summarise(
+    ex_diff_2020_q025 = quantile(ex_diff_2020, 0.025),
+    ex_diff_2020_q975 = quantile(ex_diff_2020, 0.975)
+  )
+
+# average yearly change in ex 2015 to 2019
+dat$lt_ex_avg_annual_diff <-
   dat$lt_85 %>%
   arrange(region_iso, sex, x, year) %>%
   filter(year %in% 2015:2019) %>%
@@ -138,36 +173,58 @@ dat$lt_avg_annual_change_pre2020 <-
   # calculated even if data is missing for some years
   # in the 2015:2019 period
   summarise(
-    # arithmetic mean of ex annual change
-    ex_avgdiff_pre2020 = mean(diff(ex), na.rm = TRUE),
-    # geometric mean of mx relative annual change
-    mx_avgratio_pre2020 = prod(mx[-1]/head(mx, -1), na.rm = TRUE)^(1/(n()-1))
+    # mean of ex annual change
+    ex_avgdiff_pre2020 = mean(diff(ex), na.rm = TRUE)
   ) %>%
   ungroup()
-# change in mx, ex 2020 to 2019
-dat$lt_annual_change_2020 <-
-  dat$lt_85 %>%
-  filter(year %in% c(2019, 2020)) %>%
-  select(region_iso, sex, year, x, mx, ex) %>%
-  pivot_wider(names_from = year, values_from = c(mx, ex)) %>%
-  mutate(
-    ex_diff_2020 = ex_2020 - ex_2019,
-    mx_ratio_2020 = mx_2020 / mx_2019
+
+# assemble all the ex statistics in a single table
+dat$lt_ex_diff <-
+  dat$lt_ex_diff_mean %>%
+  left_join(dat$lt_ex_diff_ci, by = c('region_iso', 'sex', 'x')) %>%
+  left_join(dat$lt_ex_avg_annual_diff, by = c('region_iso', 'sex', 'x')) %>%
+  select(
+    region_iso, sex, x,
+    ex_2019, ex_2020, ex_diff_2020,
+    ex_diff_2020_q025, ex_diff_2020_q975, ex_avgdiff_pre2020
   )
-# join average pre 2020 and 2020 changes
-dat$lt_annual_change <-
-  full_join(
-    dat$lt_avg_annual_change_pre2020,
-    dat$lt_annual_change_2020,
-    by  = c('region_iso', 'sex', 'x')
-  )
+
+# format table for export
+walk(c(0, 60), ~{
+  tab[[glue('tab_e{.x}_diff')]] <<-
+    dat$lt_ex_diff %>%
+    filter(x == .x) %>%
+    select(-x) %>%
+    # round
+    mutate(across(
+      c(ex_2019, ex_2020),
+      ~formatC(., digits = 1, format = 'f')
+    )) %>%
+    mutate(across(
+      starts_with(c('ex_diff', 'ex_avgdiff')),
+      ~formatC(., digits = 2, format = 'f', flag = '+')
+    )) %>%
+    # join
+    mutate(
+      ex_diff_2020 =
+        paste0(ex_diff_2020, ' (', ex_diff_2020_q025, ',', ex_diff_2020_q975, ')')
+    ) %>%
+    select(region_iso, sex, ex_2019, ex_2020, ex_diff_2020, ex_avgdiff_pre2020) %>%
+    pivot_wider(
+      id_cols = c(region_iso, sex),
+      names_from = sex,
+      values_from = c(ex_2019, ex_2020, ex_diff_2020, ex_avgdiff_pre2020)
+    )
+})
+
+# Plot ex changes -------------------------------------------------
 
 # plot changes in remaining e0, e60
 # from 2019 to 2020 by sex and region and compare with average
 # annual change over 2015 to 2019 period
 walk(c(0, 60), ~{
   fig[[glue('e{.x}_change')]] <<-
-    dat$lt_annual_change %>%
+    dat$lt_ex_diff %>%
     filter(x == .x) %>%
     mutate(
       x = as.factor(x),
@@ -179,17 +236,23 @@ walk(c(0, 60), ~{
       xintercept = seq(2, length(cnst$regions_for_analysis), 2),
       size = 3, color = '#eaeaea'
     ) +
-    geom_col(
-      aes(y = ex_diff_2020),
-      position = position_dodge(width = 0.6), width = 0.4
+    geom_pointrange(
+      aes(
+        x = region_iso,
+        color = sex,
+        ymin = ex_diff_2020_q025,
+        y = ex_diff_2020,
+        ymax = ex_diff_2020_q975
+      ),
+      fatten = 0.3, size = 0.2,
+      position = position_dodge(width = 0.6)
     ) +
     geom_point(
       aes(x = region_iso, fill = sex, y = ex_avgdiff_pre2020),
-      position = position_dodge(width = 0.6), shape = 21,
-      color = 'white'
+      position = position_dodge(width = 0.6), shape = 4, size = 0.6
     ) +
     geom_hline(yintercept = 0) +
-    coord_flip(ylim = c(-2, 1)) +
+    coord_flip(ylim = c(-2.2, 1)) +
     scale_y_continuous(
       breaks = seq(-2, 2, 0.5),
       labels = c('-2 years', '', '-1', '', '0', '', '+1', '', '+2 years gained')
@@ -218,25 +281,11 @@ fig$ex_change <-
   plot_layout(guides = 'collect') +
   plot_annotation(
     title = 'Annual change in years of remaining life-expectancy 2019 to 2020',
-    subtitle = 'Points mark the average annual change in life-expectancy 2015 to 2019'
+    subtitle = '95% CIs via Poisson sampling of expected death counts\nCrosses mark the average annual change in life-expectancy 2015 to 2019'
   )
 fig$ex_change
 
-# compare hazards
-fig$hx_change <-
-  dat$lt_annual_change %>%
-  ggplot(aes(x = x, color = sex)) +
-  geom_line(aes(y = mx_2020), size = 0.3) +
-  geom_line(aes(y = mx_2019), linetype = 6, size = 0.3) +
-  facet_wrap(~region_iso) +
-  scale_y_log10() +
-  scale_color_manual(values = fig_spec$sex_colors) +
-  fig_spec$MyGGplotTheme(panel_border = TRUE, scaler = 0.8) +
-  labs(x = 'Age', y = 'Deaths per person-year of exposure',
-       title = 'Hazard rates 2020 compared with 2019 (dashed)')
-fig$hx_change
-
-# Analyze mx change -----------------------------------------------
+# Plot mx changes -------------------------------------------------
 
 dat$mx_change <-
   dat$lt_85_sim %>%
@@ -331,11 +380,22 @@ saveRDS(dat$lt_input_85, file = glue('{wd}/out/lt_input_85.rds'))
 saveRDS(dat$lt_85, file = glue('{wd}/out/lt_output_85.rds'))
 saveRDS(dat$lt_100, file = glue('{wd}/out/lt_output_100.rds'))
 
-# save e0, e60 change
-fig_spec$ExportFigure(fig$ex_change, path = cnst$path_out)
+# save table of ex changes and CIs
+saveRDS(dat$lt_ex_diff, file = glue('{wd}/out/lt_ex_diff.rds'))
 
-# save the hazard change
-fig_spec$ExportFigure(fig$hx_change, path = cnst$path_out)
+# save formatted table of ex changes and CIs
+tab$tab_ex_diff_wb <- createWorkbook()
+addWorksheet(tab$tab_ex_diff_wb, sheetName = 'e0')
+addWorksheet(tab$tab_ex_diff_wb, sheetName = 'e60')
+writeData(tab$tab_ex_diff_wb, sheet = 'e0', tab$tab_e0_diff)
+writeData(tab$tab_ex_diff_wb, sheet = 'e60', tab$tab_e60_diff)
+saveWorkbook(
+  tab$tab_ex_diff, glue('{wd}/out/tab_ex_diff.xlsx'),
+  overwrite = TRUE
+)
+
+# save e0, e60 change figure
+fig_spec$ExportFigure(fig$ex_change, path = cnst$path_out)
 
 # save the life-table death rate change
 fig_spec$ExportFigure(fig$mx_change, path = cnst$path_out)
