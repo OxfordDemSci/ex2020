@@ -9,7 +9,6 @@ library(reshape2)
 library(doParallel)
 
 # Constants -------------------------------------------------------
-
 wd <- here()
 config <- yaml::read_yaml(glue::glue('{wd}/cfg/config.yaml'))
 cnst <- list()
