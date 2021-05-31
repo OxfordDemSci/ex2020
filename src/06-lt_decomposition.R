@@ -169,6 +169,10 @@ dat$decomposition_results_by_age <- dat$mx_input_decomp[, Decomp_fun(DT = .SD,co
 dat$decomposition_results_by_age_cause <- dat$mx_input_decomp[region_iso %in% cnst$regions_for_cause_of_death_analysis,
                                                         Decomp_fun(DT = .SD,covid.included = 1,cond_age = 0), by = .(region_iso,sex)]
 
+#double check new countries
+#check.1 <- dat$mx_input_decomp[region_iso %in% c('US', 'NO', 'HU') & is.na(mx.covid)]
+#dat$decomposition_results_by_age_cause[is.na(contribution) & year.final %in% 2020]
+
 #decomp by age and cause, fewer countries sensitivity check with stepwise
 dat$decomposition_results_by_age_stepwise <- dat$mx_input_decomp[,Decomp_fun_stepwise(DT = .SD,covid.included = 0,cond_age = 0),
                                                                  by = .(region_iso,sex)]
@@ -190,16 +194,14 @@ dat$decomposition_results_by_age_stepwise_60 <- dat$mx_input_decomp[,Decomp_fun_
 
 ##### Decomposition for life expectancy at age 80
 #decomp by age
-dat$decomposition_results_by_age_80 <- dat$mx_input_decomp[, Decomp_fun(DT = .SD,covid.included = 0,cond_age = 80), by = .(region_iso,sex)]
+#dat$decomposition_results_by_age_80 <- dat$mx_input_decomp[, Decomp_fun(DT = .SD,covid.included = 0,cond_age = 80), by = .(region_iso,sex)]
 
 
 #decomp by age and cause, fewer countries
-dat$decomposition_results_by_age_cause_80 <- dat$mx_input_decomp[region_iso %in% cnst$regions_for_cause_of_death_analysis,
-                                                                 Decomp_fun(DT = .SD,covid.included = 1,cond_age = 80), by = .(region_iso,sex)]
+#dat$decomposition_results_by_age_cause_80 <- dat$mx_input_decomp[region_iso %in% cnst$regions_for_cause_of_death_analysis,Decomp_fun(DT = .SD,covid.included = 1,cond_age = 80), by = .(region_iso,sex)]
 
 #decomp by age and cause, fewer countries sensitivity check with stepwise
-dat$decomposition_results_by_age_stepwise_80 <- dat$mx_input_decomp[,Decomp_fun_stepwise(DT = .SD,covid.included = 0,cond_age = 80),
-                                                                    by = .(region_iso,sex)]
+#dat$decomposition_results_by_age_stepwise_80 <- dat$mx_input_decomp[,Decomp_fun_stepwise(DT = .SD,covid.included = 0,cond_age = 80),by = .(region_iso,sex)]
 
 #add some variables and save
 
@@ -219,13 +221,14 @@ dat$decomposition_results_by_age_stepwise_60$year.initial <-  dat$decomposition_
 dat$decomposition_results_by_age_cause_60$cause <- factor(dat$decomposition_results_by_age_cause_60$cause,labels = c('covid','non.covid'))
 
 
-dat$decomposition_results_by_age_80$year.initial <-  dat$decomposition_results_by_age_80$year.final-1
-dat$decomposition_results_by_age_cause_80$year.initial <-  dat$decomposition_results_by_age_cause_80$year.final-1
-dat$decomposition_results_by_age_stepwise_80$year.initial <-  dat$decomposition_results_by_age_stepwise_80$year.final-1
+#dat$decomposition_results_by_age_80$year.initial <-  dat$decomposition_results_by_age_80$year.final-1
+#dat$decomposition_results_by_age_cause_80$year.initial <-  dat$decomposition_results_by_age_cause_80$year.final-1
+#dat$decomposition_results_by_age_stepwise_80$year.initial <-  dat$decomposition_results_by_age_stepwise_80$year.final-1
 
 
-dat$decomposition_results_by_age_cause_80$cause <- factor(dat$decomposition_results_by_age_cause_80$cause,labels = c('covid','non.covid'))
+#dat$decomposition_results_by_age_cause_80$cause <- factor(dat$decomposition_results_by_age_cause_80$cause,labels = c('covid','non.covid'))
 
 
 
 saveRDS(dat, file = glue('{wd}/out/decomposition_results.rds'))
+
