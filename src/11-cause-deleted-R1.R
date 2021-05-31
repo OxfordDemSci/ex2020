@@ -50,6 +50,9 @@ dat$mx_input_decom[,mx := death_total/population_py]
 #add covid19 mx
 dat$mx_input_decom[,Ri := death_covid/death_total]
 
+#cheack
+#dat$mx_input_decom[is.na(Ri)]
+
 #view(dat$mx_input_decom)
 # Functions -------------------------------------------------------
 
