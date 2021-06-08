@@ -14,6 +14,7 @@ library(gt); library(openxlsx)
 wd <- here()
 cnst <- list()
 config <- read_yaml(glue('{wd}/cfg/config.yaml'))
+region_meta <- read_csv(glue('{wd}/cfg/region_metadata.csv'), na = '.')
 cnst <- within(cnst, {
   regions_for_analysis = config$regions_for_all_cause_analysis
   path_out = glue('{wd}/out')
@@ -115,7 +116,6 @@ dat$lt_85 <-
   }) %>%
   ungroup()
 
-
 # Create Poisson life-table replicates ----------------------------
 
 # create life table replicates by region, sex, and year
@@ -138,13 +138,14 @@ dat$lt_85_sim <-
 # Assemble table of ex changes ------------------------------------
 
 # change in ex 2019 to 2020 (central estimates)
+# and ex 2015 to 2020
 dat$lt_ex_diff_mean <-
   dat$lt_85 %>%
-  filter(year %in% c(2019, 2020)) %>%
+  filter(year %in% c(2015:2020)) %>%
   select(region_iso, sex, year, x, mx, ex) %>%
   pivot_wider(names_from = year, values_from = c(mx, ex)) %>%
   mutate(
-    ex_diff_2020 = ex_2020 - ex_2019
+    ex_diff_1920 = ex_2020 - ex_2019
   )
 
 # 95% CI of change in ex 2019 to 2020
@@ -154,13 +155,13 @@ dat$lt_ex_diff_ci <-
   select(id_sim, region_iso, sex, year, x, mx, ex) %>%
   pivot_wider(names_from = year, values_from = c(mx, ex)) %>%
   mutate(
-    ex_diff_2020 = ex_2020 - ex_2019
+    ex_diff_1920 = ex_2020 - ex_2019
   ) %>%
   # summarise replications
   group_by(region_iso, sex, x) %>%
   summarise(
-    ex_diff_2020_q025 = quantile(ex_diff_2020, 0.025),
-    ex_diff_2020_q975 = quantile(ex_diff_2020, 0.975)
+    ex_diff_1920_q025 = quantile(ex_diff_1920, 0.025),
+    ex_diff_1920_q975 = quantile(ex_diff_1920, 0.975)
   )
 
 # average yearly change in ex 2015 to 2019
@@ -183,10 +184,17 @@ dat$lt_ex_diff <-
   dat$lt_ex_diff_mean %>%
   left_join(dat$lt_ex_diff_ci, by = c('region_iso', 'sex', 'x')) %>%
   left_join(dat$lt_ex_avg_annual_diff, by = c('region_iso', 'sex', 'x')) %>%
+  mutate(
+    region_name = factor(
+      region_iso,
+      region_meta$region_code_iso3166_2,
+      region_meta$region_name
+    )
+  ) %>%
   select(
-    region_iso, sex, x,
-    ex_2019, ex_2020, ex_diff_2020,
-    ex_diff_2020_q025, ex_diff_2020_q975, ex_avgdiff_pre2020
+    region_iso, region_name, sex, x,
+    ex_2015:ex_2020, ex_diff_1920,
+    ex_diff_1920_q025, ex_diff_1920_q975, ex_avgdiff_pre2020
   )
 
 # format table for export
@@ -197,7 +205,7 @@ walk(c(0, 60), ~{
     select(-x) %>%
     # round
     mutate(across(
-      c(ex_2019, ex_2020),
+      c(ex_2015:ex_2020),
       ~formatC(., digits = 1, format = 'f')
     )) %>%
     mutate(across(
@@ -206,14 +214,14 @@ walk(c(0, 60), ~{
     )) %>%
     # join
     mutate(
-      ex_diff_2020 =
-        paste0(ex_diff_2020, ' (', ex_diff_2020_q025, ',', ex_diff_2020_q975, ')')
+      ex_diff_1920 =
+        paste0(ex_diff_1920, ' (', ex_diff_1920_q025, ',', ex_diff_1920_q975, ')')
     ) %>%
-    select(region_iso, sex, ex_2019, ex_2020, ex_diff_2020, ex_avgdiff_pre2020) %>%
+    select(region_iso, region_name, sex, ex_2015:ex_2020, ex_diff_1920, ex_avgdiff_pre2020) %>%
     pivot_wider(
-      id_cols = c(region_iso, sex),
+      id_cols = c(region_iso, region_name, sex),
       names_from = sex,
-      values_from = c(ex_2019, ex_2020, ex_diff_2020, ex_avgdiff_pre2020)
+      values_from = c(ex_2015:ex_2020, ex_diff_1920, ex_avgdiff_pre2020)
     )
 })
 
@@ -228,9 +236,9 @@ walk(c(0, 60), ~{
     filter(x == .x) %>%
     mutate(
       x = as.factor(x),
-      region_iso = fct_reorder(region_iso, -ex_diff_2020)
+      region_name = fct_reorder(region_name, -ex_diff_1920)
     ) %>%
-    ggplot(aes(x = region_iso, color = sex, fill = sex, group = sex)) +
+    ggplot(aes(x = region_name, color = sex, fill = sex, group = sex)) +
     geom_col(aes(y = 0)) + # workaround so tht geom_vline works with discrete scale
     geom_vline(
       xintercept = seq(2, length(cnst$regions_for_analysis), 2),
@@ -238,17 +246,16 @@ walk(c(0, 60), ~{
     ) +
     geom_pointrange(
       aes(
-        x = region_iso,
         color = sex,
-        ymin = ex_diff_2020_q025,
-        y = ex_diff_2020,
-        ymax = ex_diff_2020_q975
+        ymin = ex_diff_1920_q025,
+        y = ex_diff_1920,
+        ymax = ex_diff_1920_q975
       ),
       fatten = 0.3, size = 0.2,
       position = position_dodge(width = 0.6)
     ) +
     geom_point(
-      aes(x = region_iso, fill = sex, y = ex_avgdiff_pre2020),
+      aes(fill = sex, y = ex_avgdiff_pre2020),
       position = position_dodge(width = 0.6), shape = 4, size = 0.6
     ) +
     geom_hline(yintercept = 0) +
