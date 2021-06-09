@@ -1,7 +1,8 @@
 #===============================================================================
 # 2021-02-09 -- ex2020
 # All the data preparation for plotting
-#===============================================================================
+#=============================================================================# UPD  2021-06-09 ------------------------------
+
 
 library(tidyverse)
 library(magrittr)
@@ -50,9 +51,6 @@ saveRDS(ids, glue('{wd}/out/ids.rds'))
 # dataset for figures 1 and 2 ---------------------------------------------
 
 # get the lt estimates
-# df_lt <- read_rds("{wd}/out/lt_output_85.rds" %>% glue)
-# UPD  2021-03-05 ------------------------------
-# Temp patch for Sweden
 df_lt <- read_rds("{wd}/out/lt_output_85.rds" %>% glue)
 
 
@@ -111,7 +109,14 @@ df_ex <- left_join(ex20, ex1519) %>%
         avg_ex_diff_1519 = case_when(
             code %in% c("CL", "DE") ~ ex_diff_1519/3,
             TRUE ~ ex_diff_1519/4
-        )
+        ),
+        name = name %>%
+            # asterix for Germany, Greece, and Chile
+            str_replace("Chile", "Chile*") %>%
+            str_replace("Germany", "Germany*") %>%
+            str_replace("Greece", "Greece*") %>%
+            as_factor() %>%
+            fct_reorder(rank_d0m20)
     )
 
 # save the data frame for figures 1 and 2
@@ -143,6 +148,7 @@ df_dec_age <- df_dec$decomposition_results_by_age %>%
             # asterix for Germany and Chile
             str_replace("Chile", "Chile*") %>%
             str_replace("Germany", "Germany*") %>%
+            str_replace("Greece", "Greece*") %>%
             as_factor() %>%
             fct_reorder(rank_d0m20),
         period = period %>% fct_rev

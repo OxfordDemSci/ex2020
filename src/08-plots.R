@@ -2,7 +2,7 @@
 # 2021-02-02 -- ex2020
 # Re-touch figures
 #===============================================================================
-# UPD  2021-02-09 ------------------------------
+# UPD  2021-06-09 ------------------------------
 
 
 library(tidyverse)
@@ -21,10 +21,6 @@ df_ex <- read_rds("{wd}/out/df_ex.rds" %>% glue)
 df_ex %>%
     mutate(
         name = name %>%
-            # asterix for Germany and Chile
-            str_replace("Chile", "Chile*") %>%
-            str_replace("Germany", "Germany*") %>%
-            as_factor() %>%
             fct_reorder(rank_e0f19)
     ) %>%
     filter(age %in% c(0, 60)) %>%
@@ -69,27 +65,41 @@ ggsave("{wd}/out/fig-1.pdf" %>% glue, one,
 
 # figure 2 -- changes in life expectancy ----------------------------------
 
-df_ex %>%
+# ALternative Fig 2 with CIs
+df_ex_ci <- df_ex %>%
+    # attach CIs from Jonas' export
+    left_join(
+        read_rds("{wd}/out/lt_ex_diff.rds" %>% glue) %>%
+            transmute(code = region_iso, sex, age = x,
+                      ex_diff_1920_q025, ex_diff_1920_q975),
+        by = c("code", "sex", "age")
+
+    )
+
+df_ex_ci %>%
     filter(age %in% c(0, 60)) %>%
     drop_na(name) %>%
-    mutate(
-        name = name %>%
-            # asterix for Germany and Chile
-            str_replace("Chile", "Chile*") %>%
-            str_replace("Germany", "Germany*") %>%
-            as_factor() %>%
-            fct_reorder(rank_d0m20)
-    ) %>%
     ggplot(aes(y = name))+
     geom_hline(yintercept = seq(2, 28, 2), size = 5, color = "#eaeaea")+
     geom_vline(xintercept = 0, size = 2, color = "#bababa")+
-    geom_point(aes(x = ex_diff, color = sex, shape = sex), size = 2)+
+    # geom_point(aes(x = ex_diff, color = sex, shape = sex), size = 2)+
+    geom_pointrange(
+        aes(
+            color = sex,
+            xmin = ex_diff_1920_q025,
+            x = ex_diff,
+            xmax = ex_diff_1920_q975
+        ),
+        fatten = .7, size = .3,
+        position = position_dodge(width = 0.6)
+    ) +
+    geom_point(aes(x = avg_ex_diff_1519, color = sex), shape = 4, size = 1,
+               position = position_dodge(width = 0.6))+
     scale_color_manual(values = c("#B5223BFF", "#64B6EEFF"))+
     scale_shape_manual(values = c(1, 16))+
-    geom_point(aes(x = avg_ex_diff_1519, color = sex), shape = 124, size = 3)+
     scale_y_discrete(position = "right")+
     scale_x_continuous(position = "top", breaks = seq(-2, .5, .5), expand = c(0,0))+
-    coord_cartesian(xlim = c(-2.2, .6))+
+    coord_cartesian(xlim = c(-2.5, 1))+
     facet_wrap(~age, ncol = 3)+
     theme_minimal(base_family = font_rc)+
     theme(
@@ -110,7 +120,8 @@ two <- last_plot()
 ggsave("{wd}/out/fig-2.pdf" %>% glue, two, width = 6, height = 4.5, device = cairo_pdf)
 
 
-
+# figure 3 -- ex 2020 drop in historical context, promoted from fo --------
+# see "src/09e-sens-e0-drop-in-context.R"
 
 
 
@@ -120,7 +131,7 @@ df_dec_age <- read_rds("{wd}/out/df_dec_age.rds" %>% glue)
 df_dec_age_cause <- read_rds("{wd}/out/df_dec_age_cause.rds" %>% glue)
 
 
-# figure 3 -- contributions by age groups ---------------------------------
+# figure 4 (previously Fig 3) -- contributions by age groups ---------------------------------
 
 df_dec_age %>%
     filter(sex == "Female") %>%
@@ -155,7 +166,7 @@ df_dec_age %>%
         y = "Age groups"
     )
 
-three_f <- last_plot()
+four_f <- last_plot()
 
 
 df_dec_age %>%
@@ -189,15 +200,15 @@ df_dec_age %>%
         y = "Age groups"
     )
 
-three_m <- last_plot()
+four_m <- last_plot()
 
-three <- three_f / three_m
+four <- four_f / four_m
 
-ggsave("{wd}/out/fig-3.pdf" %>% glue, three, width = 10, height = 8, device = cairo_pdf)
+ggsave("{wd}/out/fig-4.pdf" %>% glue, four, width = 10, height = 8, device = cairo_pdf)
 
 
 
-# figure 4 -- split 2020 into covid and non-covid -------------------------
+# figure 5 (previously fig 4) -- split 2020 into covid and non-covid -------------------------
 
 # df_dec_age_cause %>%
 #     filter(sex == "Female") %>%
@@ -305,23 +316,25 @@ ggsave("{wd}/out/fig-3.pdf" %>% glue, three, width = 10, height = 8, device = ca
 df_dec_age_cause %>%
     left_join(ids) %>%
     drop_na(name) %>%
-    filter(period_cause == "2019-20 COVID") %>%
-    group_by(name, sex) %>%
+    filter(!period_cause == "2015-19") %>%
+    group_by(name, sex, period_cause) %>%
     summarise(ctb = ctb %>% sum(na.rm = T)) %>%
     ungroup() %>%
     mutate(name = name %>% fct_reorder(ctb %>% desc)) %>%
 
-    ggplot(aes(ctb, name, fill = sex))+
+    ggplot(aes(ctb, name, fill = sex, alpha = period_cause))+
     geom_col()+
     scale_fill_manual(values = c("#B5223BFF", "#64B6EEFF"))+
+    scale_alpha_manual(values = c(1, .5))+
     scale_y_discrete(position = "right")+
-    scale_x_continuous(position = "top", breaks = c(-1.5, -1, -.5, 0))+
+    scale_x_continuous(position = "top", breaks = c(-2, -1.5, -1, -.5, 0))+
     facet_wrap(~sex, ncol = 2)+
     theme_minimal(base_family = font_rc)+
     theme(
         legend.position = "none",
         panel.grid.major.y = element_blank(),
         panel.grid.minor.y = element_blank(),
+        panel.grid.minor.x = element_blank(),
         panel.spacing.x = unit(2, "lines"),
         strip.text = element_blank(),
         axis.text.y = element_text(face = 2),
@@ -331,15 +344,16 @@ df_dec_age_cause %>%
         y = NULL
     )
 
-four <- last_plot()
+five <- last_plot()
 
-ggsave("{wd}/out/fig-4.pdf" %>% glue, four, width = 6, height = 3, device = cairo_pdf)
+ggsave("{wd}/out/fig-5.pdf" %>% glue, five, width = 6, height = 4, device = cairo_pdf)
 
 
-# ggsave("tmp/fig-1.png", one, width = 9, height = 4, type = "cairo")
-# ggsave("tmp/fig-2.png", two, width = 9, height = 4, type = "cairo")
-# ggsave("tmp/fig-3.png", three, width = 10, height = 8, type = "cairo")
-# ggsave("tmp/fig-4.png", four, width = 10, height = 8, type = "cairo")
+ggsave("tmp/fig-1.png", one, width = 6, height = 4.5, type = "cairo")
+ggsave("tmp/fig-2.png", two, width = 6, height = 4.5, type = "cairo")
+ggsave("tmp/fig-3.png", three, width = 7, height = 9, type = "cairo")
+ggsave("tmp/fig-4.png", four, width = 10, height = 8, type = "cairo")
+ggsave("tmp/fig-5.png", five, width = 6, height = 4, type = "cairo")
 
 
 # additional fig 1 without 2020 -------------------------------------------

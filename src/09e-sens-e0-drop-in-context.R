@@ -153,8 +153,8 @@ df20 %>%
 diff_m <- last_plot()
 
 ggsave(
-    "{wd}/out/sens/fig-s4b-hmd-yearly-e0-diff-m.pdf" %>% glue,
-    diff_m, width = 7, height = 7, device = cairo_pdf
+    "{wd}/out/fig-3.pdf" %>% glue,
+    diff_m, width = 7, height = 9, device = cairo_pdf
 )
 
 # the same for females
@@ -242,6 +242,6 @@ diff_f <- last_plot()
 
 
 ggsave(
-    "{wd}/out/sens/fig-s4a-hmd-yearly-e0-diff-f.pdf" %>% glue,
-    diff_f, width = 7, height = 7, device = cairo_pdf
+    "{wd}/out/sens/fig-s4-hmd-yearly-e0-diff-f.pdf" %>% glue,
+    diff_f, width = 7, height = 9, device = cairo_pdf
 )
