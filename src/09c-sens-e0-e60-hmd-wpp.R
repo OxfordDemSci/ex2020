@@ -57,8 +57,8 @@ ex_comp %>%
         aes(y = ex_wpp, yend = ex_wpp, x = 2015, xend = 2019),
         size = .5, color = 8
     )+
-    geom_point(aes(y = ex_85, color = sex), shape = 95, size = 4)+
-    geom_point(aes(y = ex_100, color = sex), shape = 43, size = 2)+
+    geom_point(aes(y = ex_85, color = sex), shape = 1, size = .7)+
+    geom_point(aes(y = ex_100, color = sex), shape = 4, size = .5)+
     scale_color_manual(
         values = c("#B5223BFF", "#64B6EEFF"),
         guide  = guide_legend(ncol = 1)
@@ -75,7 +75,7 @@ ex_comp %>%
     labs(
         color = NULL,
         y = "Life expectancy estimates, years",
-        title = "Estimated yearly life expectancy at age 0 with open age group 85+ (—) and 100+ (+) compared with HMD (colored line) and WPP (grey) 5 year average estimates" %>% str_wrap(97)
+        title = "Estimated yearly life expectancy at age 0 with open age group 85+ (circle) and 100+ (cross) compared with HMD (colored line) and WPP (grey) 5 year average estimates" %>% str_wrap(97)
     )
 
 ggsave(
