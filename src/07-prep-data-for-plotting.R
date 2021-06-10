@@ -119,9 +119,35 @@ df_ex <- left_join(ex20, ex1519) %>%
             fct_reorder(rank_d0m20)
     )
 
+
+# attach CIs from Jonas' export
+df_ex_ci <- df_ex %>%
+    left_join(
+        read_rds("{wd}/out/lt_ex_diff.rds" %>% glue) %>%
+            transmute(code = region_iso, sex, age = x,
+                      ex_diff_1920_q025, ex_diff_1920_q975),
+        by = c("code", "sex", "age")
+
+    )
+
 # save the data frame for figures 1 and 2
-write_rds(df_ex, "{wd}/out/df_ex.rds" %>% glue)
-write_csv(df_ex, "{wd}/out/df_ex.csv" %>% glue) # export for Ian
+write_rds(df_ex_ci, "{wd}/out/df_ex_ci.rds" %>% glue)
+
+
+# export a simplified CSV for the dashboard -------------------------------
+
+df_export <- df_ex_ci %>%
+    filter(age %in% c(seq(0, 80, 10), 85)) %>%
+    transmute(
+        name, code, sex, age,
+        ex_2015, ex_2019, ex_2020,
+        ex_diff_1519, avg_ex_diff_1519,
+        ex_diff_1920 = ex_diff,
+        ex_diff_1920_q025, ex_diff_1920_q975
+    )
+
+
+write_csv(df_export, "{wd}/out/df_export.csv" %>% glue) # export for Ian
 
 
 # datasets for figures 3 and 4 --------------------------------------------

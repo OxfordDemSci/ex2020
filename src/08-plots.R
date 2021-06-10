@@ -14,11 +14,11 @@ library(cowplot)
 library(here); wd <- here()
 library(glue)
 
-df_ex <- read_rds("{wd}/out/df_ex.rds" %>% glue)
+df_ex_ci <- read_rds("{wd}/out/df_ex_ci.rds" %>% glue)
 
 # figrue 1 -- absolute levels of life expectancy --------------------------
 
-df_ex %>%
+df_ex_ci %>%
     mutate(
         name = name %>%
             fct_reorder(rank_e0f19)
@@ -64,17 +64,6 @@ ggsave("{wd}/out/fig-1.pdf" %>% glue, one,
 
 
 # figure 2 -- changes in life expectancy ----------------------------------
-
-# ALternative Fig 2 with CIs
-df_ex_ci <- df_ex %>%
-    # attach CIs from Jonas' export
-    left_join(
-        read_rds("{wd}/out/lt_ex_diff.rds" %>% glue) %>%
-            transmute(code = region_iso, sex, age = x,
-                      ex_diff_1920_q025, ex_diff_1920_q975),
-        by = c("code", "sex", "age")
-
-    )
 
 df_ex_ci %>%
     filter(age %in% c(0, 60)) %>%
@@ -349,11 +338,11 @@ five <- last_plot()
 ggsave("{wd}/out/fig-5.pdf" %>% glue, five, width = 6, height = 4, device = cairo_pdf)
 
 
-ggsave("tmp/fig-1.png", one, width = 6, height = 4.5, type = "cairo")
-ggsave("tmp/fig-2.png", two, width = 6, height = 4.5, type = "cairo")
-ggsave("tmp/fig-3.png", three, width = 7, height = 9, type = "cairo")
-ggsave("tmp/fig-4.png", four, width = 10, height = 8, type = "cairo")
-ggsave("tmp/fig-5.png", five, width = 6, height = 4, type = "cairo")
+# ggsave("tmp/fig-1.png", one, width = 6, height = 4.5, type = "cairo")
+# ggsave("tmp/fig-2.png", two, width = 6, height = 4.5, type = "cairo")
+# ggsave("tmp/fig-3.png", diff_m, width = 7, height = 9, type = "cairo")
+# ggsave("tmp/fig-4.png", four, width = 10, height = 8, type = "cairo")
+# ggsave("tmp/fig-5.png", five, width = 6, height = 4, type = "cairo")
 
 
 # additional fig 1 without 2020 -------------------------------------------
