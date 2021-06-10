@@ -143,7 +143,8 @@ df_export <- df_ex_ci %>%
         ex_2015, ex_2019, ex_2020,
         ex_diff_1519, avg_ex_diff_1519,
         ex_diff_1920 = ex_diff,
-        ex_diff_1920_q025, ex_diff_1920_q975
+        ex_diff_1920_q025, ex_diff_1920_q975,
+        rank_e0f19, rank_d0m20
     )
 
 
