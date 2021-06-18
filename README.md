@@ -3,14 +3,14 @@
 </p>
 
 
-## Recent Gains in Life Expectancy Reversed by the COVID-19 Pandemic
+## Quantifying impacts of the COVID-19 pandemic through life expectancy losses: a population-level study of 29 countries
 
 [![DOI](https://zenodo.org/badge/334238621.svg)](https://zenodo.org/badge/latestdoi/334238621) [![Generic badge](https://img.shields.io/badge/R-4.0.4-orange.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/License-GNU-<green>.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/Maintained-Yes-red.svg)](https://shields.io/)
 
 ### Introduction
 ------------
 
-This is a repository to accompany 'Recent Gains in Life Expectancy Reversed by the COVID-19 Pandemic'. A link to the open-access version of the paper can be found by clicking _here_ in due course. The replication files for this paper include customised functionality written in the [**R**](https://www.r-project.org/) statistical programming language.
+This is a repository to accompany 'Quantifying impacts of the COVID-19 pandemic through life expectancy losses: a population-level study of 29 countries'. A link to the open-access version of the paper can be found by clicking _here_ in due course. The replication files for this paper include customised functionality written in the [**R**](https://www.r-project.org/) statistical programming language.
 
 
 ### Prerequisites
@@ -52,4 +52,4 @@ This work is free. You can redistribute it and/or modify it under the terms of t
 
 ### Acknowledgements
 
-We are grateful to the extensive comments provided by Jim Oeppen, Alyson van Raalte and Christiaan Monden. Funding was generously provided by a British Academy Newton International Fellowship, the Rockwool Foundation’s Excess Deaths grant, a Leverhulme Trust Large Centre Grant, a John Fell Fund grant, a European Research Council grant and the Interdisciplinary Centre on Population Dynamics (CPop).
+We are grateful to the extensive comments provided by Jim Oeppen, Alyson van Raalte, John Ermisch and Christiaan Monden. Funding was generously provided by a British Academy Newton International Fellowship, the Rockwool Foundation’s Excess Deaths grant, a Leverhulme Trust Large Centre Grant, a John Fell Fund grant, a European Research Council grant and the Interdisciplinary Centre on Population Dynamics (CPop).
