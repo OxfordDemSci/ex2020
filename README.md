@@ -1,17 +1,27 @@
 <p align="center">
-  <img src="https://github.com/OxfordDemSci/ex2020/blob/master/out/figs-png/fig-2-ann.png?raw=true" width="100%"/>
+  <img src="https://github.com/OxfordDemSci/ex2020/blob/master/out/figs-png/fig-1-ann.png?raw=true" width="100%"/>
 </p>
 
 
-## Quantifying impacts of the COVID-19 pandemic through life expectancy losses: a population-level study of 29 countries
+## Quantifying impacts of the COVID-19 pandemic through life expectancy losses:
+### A population-level study of 29 countries
 
-[![DOI](https://zenodo.org/badge/334238621.svg)](https://zenodo.org/badge/latestdoi/334238621) [![Generic badge](https://img.shields.io/badge/R-4.0.4-orange.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/License-GNU-<green>.svg)](https://shields.io/)  [![Generic badge](https://img.shields.io/badge/Maintained-Yes-red.svg)](https://shields.io/)
+[![DOI](https://zenodo.org/badge/334238621.svg)](https://zenodo.org/badge/latestdoi/334238621)
+[![Generic badge](https://img.shields.io/badge/R-4.0.4-orange.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/License-GNU-<green>.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/Maintained-Yes-red.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/BuildPassing-Yes-purple.svg)](https://shields.io/)
 
 ### Introduction
 ------------
 
-This is a repository to accompany 'Quantifying impacts of the COVID-19 pandemic through life expectancy losses: a population-level study of 29 countries'. A link to the open-access version of the paper can be found by clicking _here_ in due course. The replication files for this paper include customised functionality written in the [**R**](https://www.r-project.org/) statistical programming language.
+This is a repository to accompany 'Quantifying impacts of the COVID-19 pandemic through life expectancy losses: a population-level study of 29 countries'. A link to the open-access version of the paper can be found by clicking [here](https://www.medrxiv.org/content/10.1101/2021.03.02.21252772v3). The replication files for this paper include customised functionality written in the [**R**](https://www.r-project.org/) statistical programming language.
 
+An interactive data visualisation relating to this work can be found here:
+
+<p align="center">
+https://covid19.demographicscience.ox.ac.uk/lifeexpectancy
+</p>
 
 ### Prerequisites
 ------------
