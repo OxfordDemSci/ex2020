@@ -3,7 +3,7 @@
 </p>
 
 
-## Quantifying impacts of the COVID-19 pandemic through life expectancy losses:
+## Quantifying impacts of the COVID-19 pandemic through life expectancy losses
 ### A population-level study of 29 countries
 
 [![DOI](https://zenodo.org/badge/334238621.svg)](https://zenodo.org/badge/latestdoi/334238621)
