@@ -124,7 +124,6 @@ dat$lt_85 <-
 # decomposition
 dat$lt_85_sim <-
   dat$lt_input_85_sub %>%
-  filter(year >= 2019) %>%
   expand_grid(id_sim = 1:cnst$n_sim) %>%
   group_by(region_iso, sex, year, age_start) %>%
   mutate(death_total_sim = rpois(cnst$n_sim, death_total)) %>%
@@ -135,89 +134,108 @@ dat$lt_85_sim <-
   }) %>%
   ungroup()
 
-# Assemble table of ex changes ------------------------------------
+# Assemble table with ex statistics -------------------------------
 
-# change in ex 2019 to 2020 (central estimates)
-# and ex 2015 to 2020
+# central estimates of life-expectancy, annual life-expectancy difference,
+# and average annual life-expectancy difference 2015 to 2019
 dat$lt_ex_diff_mean <-
   dat$lt_85 %>%
   filter(year %in% c(2015:2020)) %>%
   select(region_iso, sex, year, x, mx, ex) %>%
-  pivot_wider(names_from = year, values_from = c(mx, ex)) %>%
+  arrange(region_iso, sex, x, year) %>%
+  group_by(region_iso, sex, x) %>%
   mutate(
-    ex_diff_1920 = ex_2020 - ex_2019
-  )
+    # annual ex difference (delta ex_y = ex_{y+1} - ex_y)
+    ex_diff = c(diff(ex), NA),
+    # average annual ex difference 2015 to 2019
+    ex_avgdiff = mean(ifelse(year %in% 2015:2018, ex_diff, NA), na.rm = TRUE)
+  ) %>%
+  ungroup()
 
-# 95% CI of change in ex 2019 to 2020
+# 95% uncertainty intervals around the central estimates
 dat$lt_ex_diff_ci <-
   dat$lt_85_sim %>%
-  filter(year %in% c(2019, 2020)) %>%
+  filter(year %in% c(2015:2020)) %>%
   select(id_sim, region_iso, sex, year, x, mx, ex) %>%
-  pivot_wider(names_from = year, values_from = c(mx, ex)) %>%
+  arrange(id_sim, region_iso, sex, x, year) %>%
+  group_by(id_sim, region_iso, sex, x) %>%
   mutate(
-    ex_diff_1920 = ex_2020 - ex_2019
+    ex_diff = c(diff(ex), NA),
+    ex_avgdiff = mean(ifelse(year %in% 2015:2018, ex_diff, NA), na.rm = TRUE)
   ) %>%
-  # summarise replications
-  group_by(region_iso, sex, x) %>%
+  group_by(region_iso, sex, x, year) %>%
   summarise(
-    ex_diff_1920_q025 = quantile(ex_diff_1920, 0.025),
-    ex_diff_1920_q975 = quantile(ex_diff_1920, 0.975)
-  )
-
-# average yearly change in ex 2015 to 2019
-dat$lt_ex_avg_annual_diff <-
-  dat$lt_85 %>%
-  arrange(region_iso, sex, x, year) %>%
-  filter(year %in% 2015:2019) %>%
-  group_by(region_iso, sex, x) %>%
-  # the na.rm statements here mean that an average is
-  # calculated even if data is missing for some years
-  # in the 2015:2019 period
-  summarise(
-    # mean of ex annual change
-    ex_avgdiff_pre2020 = mean(diff(ex), na.rm = TRUE)
+    ex_q025 = quantile(ex, 0.025, na.rm = TRUE),
+    ex_q975 = quantile(ex, 0.975, na.rm = TRUE),
+    ex_diff_q025 = quantile(ex_diff, 0.025, na.rm = TRUE),
+    ex_diff_q975 = quantile(ex_diff, 0.975, na.rm = TRUE),
+    ex_avgdiff_q025 = quantile(ex_avgdiff, 0.025, na.rm = TRUE),
+    ex_avgdiff_q975 = quantile(ex_avgdiff, 0.975, na.rm = TRUE)
   ) %>%
   ungroup()
 
 # assemble all the ex statistics in a single table
-dat$lt_ex_diff <-
-  dat$lt_ex_diff_mean %>%
-  left_join(dat$lt_ex_diff_ci, by = c('region_iso', 'sex', 'x')) %>%
-  left_join(dat$lt_ex_avg_annual_diff, by = c('region_iso', 'sex', 'x')) %>%
+# for further computation
+dat$lt_ex_diff_long <-
+  left_join(
+    dat$lt_ex_diff_mean,
+    dat$lt_ex_diff_ci
+  ) %>%
   mutate(
     region_name = factor(
       region_iso,
       region_meta$region_code_iso3166_2,
       region_meta$region_name
     )
+  )
+
+# this will be exported for use in further computation
+dat$lt_ex_diff <-
+  dat$lt_ex_diff_long %>%
+  select(-mx, -ex_q025, -ex_q975) %>%
+  pivot_wider(
+    names_from = year,
+    values_from = c(ex, ex_diff, ex_diff_q025, ex_diff_q975,
+                    ex_avgdiff, ex_avgdiff_q025, ex_avgdiff_q975)
   ) %>%
   select(
     region_iso, region_name, sex, x,
-    ex_2015:ex_2020, ex_diff_1920,
-    ex_diff_1920_q025, ex_diff_1920_q975, ex_avgdiff_pre2020
+    ex_2015:ex_2020,
+    ex_diff_1920 = ex_diff_2019,
+    ex_diff_1920_q025 = ex_diff_q025_2019,
+    ex_diff_1920_q975 = ex_diff_q975_2019,
+    ex_avgdiff_pre2020 = ex_avgdiff_2020,
+    ex_avgdiff_pre2020_q025 = ex_avgdiff_q025_2020,
+    ex_avgdiff_pre2020_q975 = ex_avgdiff_q975_2020
   )
 
-# format table for export
+# format ex statistics for export as excel table
 walk(c(0, 60), ~{
   tab[[glue('tab_e{.x}_diff')]] <<-
-    dat$lt_ex_diff %>%
-    filter(x == .x) %>%
-    select(-x) %>%
-    # round
-    mutate(across(
-      c(ex_2015:ex_2020),
-      ~formatC(., digits = 1, format = 'f')
-    )) %>%
+    dat$lt_ex_diff_long %>%
     mutate(across(
       starts_with(c('ex_diff', 'ex_avgdiff')),
       ~formatC(., digits = 2, format = 'f', flag = '+')
     )) %>%
-    # join
+    mutate(across(
+      c(ex, ex_q025, ex_q975),
+      ~formatC(., digits = 2, format = 'f')
+    )) %>%
     mutate(
-      ex_diff_1920 =
-        paste0(ex_diff_1920, ' (', ex_diff_1920_q025, ',', ex_diff_1920_q975, ')')
+      ex =
+        paste0(ex, ' (', ex_q025, ',', ex_q975, ')'),
+      ex_diff =
+        paste0(ex_diff, ' (', ex_diff_q025, ',', ex_diff_q975, ')'),
+      ex_avgdiff =
+        paste0(ex_avgdiff, ' (', ex_avgdiff_q025, ',', ex_avgdiff_q975, ')')
     ) %>%
-    select(region_iso, region_name, sex, ex_2015:ex_2020, ex_diff_1920, ex_avgdiff_pre2020) %>%
+    select(region_iso, region_name, sex, year, x, ex, ex_diff, ex_avgdiff) %>%
+    pivot_wider(names_from = year, values_from = c(ex, ex_diff, ex_avgdiff)) %>%
+    select(region_iso, region_name, sex, x, ex_2015:ex_2020,
+           ex_diff_1920 = ex_diff_2019,
+           ex_avgdiff_pre2020 = ex_avgdiff_2020) %>%
+    filter(x == .x) %>%
+    select(-x) %>%
     pivot_wider(
       id_cols = c(region_iso, region_name, sex),
       names_from = sex,
@@ -254,9 +272,15 @@ walk(c(0, 60), ~{
       fatten = 0.3, size = 0.2,
       position = position_dodge(width = 0.6)
     ) +
-    geom_point(
-      aes(fill = sex, y = ex_avgdiff_pre2020),
-      position = position_dodge(width = 0.6), shape = 4, size = 0.6
+    geom_pointrange(
+      aes(
+        color = sex,
+        ymin = ex_avgdiff_pre2020_q025,
+        y = ex_avgdiff_pre2020,
+        ymax = ex_avgdiff_pre2020_q975
+      ),
+      fatten = 0.3, size = 0.2, shape = 4,
+      position = position_dodge(width = 0.6)
     ) +
     geom_hline(yintercept = 0) +
     coord_flip(ylim = c(-2.2, 1)) +
