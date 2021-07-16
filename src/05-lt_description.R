@@ -257,10 +257,29 @@ walk(c(0, 60), ~{
       region_name = fct_reorder(region_name, -ex_diff_1920)
     ) %>%
     ggplot(aes(x = region_name, color = sex, fill = sex, group = sex)) +
-    geom_col(aes(y = 0)) + # workaround so tht geom_vline works with discrete scale
+    geom_col(aes(y = 0)) + # workaround so that geom_vline works with discrete scale
     geom_vline(
       xintercept = seq(2, length(cnst$regions_for_analysis), 2),
       size = 3, color = '#eaeaea'
+    ) +
+    geom_pointrange(
+      aes(
+        color = sex,
+        ymin = ex_avgdiff_pre2020_q025,
+        y = ex_avgdiff_pre2020,
+        ymax = ex_avgdiff_pre2020_q975
+      ),
+      fatten = 0.3, size = 1, shape = '',
+      alpha = 0.5,
+      position = position_dodge(width = 0.6)
+    ) +
+    geom_point(
+      aes(
+        color = sex,
+        y = ex_avgdiff_pre2020,
+      ),
+      size = 0.5, shape = 4,
+      position = position_dodge(width = 0.6)
     ) +
     geom_pointrange(
       aes(
@@ -270,16 +289,6 @@ walk(c(0, 60), ~{
         ymax = ex_diff_1920_q975
       ),
       fatten = 0.3, size = 0.2,
-      position = position_dodge(width = 0.6)
-    ) +
-    geom_pointrange(
-      aes(
-        color = sex,
-        ymin = ex_avgdiff_pre2020_q025,
-        y = ex_avgdiff_pre2020,
-        ymax = ex_avgdiff_pre2020_q975
-      ),
-      fatten = 0.3, size = 0.2, shape = 4,
       position = position_dodge(width = 0.6)
     ) +
     geom_hline(yintercept = 0) +
