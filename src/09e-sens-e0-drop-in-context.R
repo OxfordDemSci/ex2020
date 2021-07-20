@@ -113,7 +113,7 @@ df20 %>%
     theme_minimal(base_family = font_rc)+
     theme(
         panel.grid.minor = element_blank(),
-        panel.spacing.x = unit(.75, "lines"),
+        panel.spacing.x = unit(1, "lines"),
         strip.text = element_blank(),
         strip.background = element_blank(),
         legend.position = c(.88, .04),
@@ -202,7 +202,7 @@ df20 %>%
     theme_minimal(base_family = font_rc)+
     theme(
         panel.grid.minor = element_blank(),
-        panel.spacing.x = unit(.75, "lines"),
+        panel.spacing.x = unit(1, "lines"),
         strip.text = element_blank(),
         strip.background = element_blank(),
         legend.position = c(.88, .04),
