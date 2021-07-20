@@ -31,7 +31,7 @@ hmd_start <- lt1x1 %>%
     )
 
 # add 2020
-df20 <- read_rds("{wd}/out/df_ex.rds" %>% glue) %>%
+df20 <- read_rds("{wd}/out/df_ex_ci.rds" %>% glue) %>%
     filter(age == 0) %>%
     transmute(name, country = code_hmd, sex, year, e0_diff = ex_diff) %>%
     left_join(hmd_start) %>%
@@ -104,8 +104,8 @@ df20 %>%
     )+
     facet_grid(row~col, scales = "free_x", space="free")+
     scale_x_continuous(
-        breaks = c(1900, 1918, 1939, 1945, 1965, 1990, 2010),
-        labels = c("1900", "'18", "", "'45", "'65", "'90", "2010")
+        breaks = c(1900, 1918, 1939, 1945, 1965, 1990, 2014),
+        labels = c("1900", "'18", "", "'45", "'65", "'90", "2014")
     )+
     scale_y_continuous(breaks = seq(-4, 4, 2), position = "right")+
 
@@ -193,8 +193,8 @@ df20 %>%
     )+
     facet_grid(row~col, scales = "free_x", space="free")+
     scale_x_continuous(
-        breaks = c(1900, 1918, 1939, 1945, 1965, 1990, 2010),
-        labels = c("1900", "'18", "", "'45", "'65", "'90", "2010")
+        breaks = c(1900, 1918, 1939, 1945, 1965, 1990, 2014),
+        labels = c("1900", "'18", "", "'45", "'65", "'90", "2014")
     )+
     scale_y_continuous(breaks = seq(-4, 4, 2), position = "right")+
 

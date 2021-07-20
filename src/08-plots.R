@@ -3,6 +3,9 @@
 # Re-touch figures
 #===============================================================================
 # UPD  2021-06-09 ------------------------------
+# UPD  2021-07-20 ------------------------------
+
+
 
 
 library(tidyverse)
@@ -82,8 +85,17 @@ df_ex_ci %>%
         fatten = .7, size = .3,
         position = position_dodge(width = 0.6)
     ) +
-    geom_point(aes(x = avg_ex_diff_1519, color = sex), shape = 4, size = 1,
+    geom_point(aes(x = ex_avgdiff_pre2020, color = sex), shape = 4, size = 1,
                position = position_dodge(width = 0.6))+
+    geom_linerange(
+        aes(
+            color = sex,
+            xmin = ex_avgdiff_pre2020_q025,
+            xmax = ex_avgdiff_pre2020_q975
+        ),
+        size = 2, alpha = .35,
+        position = position_dodge(width = 0.5)
+    ) +
     scale_color_manual(values = c("#B5223BFF", "#64B6EEFF"))+
     scale_shape_manual(values = c(1, 16))+
     scale_y_discrete(position = "right")+
