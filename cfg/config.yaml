@@ -64,13 +64,13 @@ regions_for_all_cause_analysis: [
     'GB-EAW',
     'GB-NIR',
     'GB-SCT',
-    'GR',
+    'GR', # new!
     'HR',
     'HU',
-    'IL', # added 2021-07-16 in response to reviewer 2
+    #'IL', # coarse age groups
     'IS',
     'IT',
-    'KR', # added 2021-07-16 in response to reviewer 2
+    #'KR', # coarse age group
     'LT',
     #'LU', # adolescent hazard profiles in 2019 very different from 2020
     #'LV', # adolescent hazard profiles in 2019 very different from 2020
@@ -82,7 +82,7 @@ regions_for_all_cause_analysis: [
     #'RU', # missing year 2020
     'SE',
     'SI',
-    'SK',
+    'SK', # new!
     #'TW', # signs for under-registration of deaths in 2020
     'US'
 ]
