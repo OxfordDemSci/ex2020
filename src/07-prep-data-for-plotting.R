@@ -1,7 +1,10 @@
 #===============================================================================
 # 2021-02-09 -- ex2020
 # All the data preparation for plotting
-#=============================================================================# UPD  2021-06-09 ------------------------------
+#=============================================================================# # # UPD  2021-06-09 ------------------------------
+# UPD  2021-07-20 ------------------------------
+
+
 
 
 library(tidyverse)
@@ -106,10 +109,11 @@ df_ex <- left_join(ex20, ex1519) %>%
     left_join(rank_d0m20) %>%
     # average difference 2015-19
     mutate(
-        avg_ex_diff_1519 = case_when(
-            code %in% c("CL", "DE") ~ ex_diff_1519/3,
-            TRUE ~ ex_diff_1519/4
-        ),
+        # avg_ex_diff_1519 = case_when(
+        #     code %in% c("CL", "DE") ~ ex_diff_1519/3,
+        #     TRUE ~ ex_diff_1519/4
+        # ),
+        # !!! now averages are calculated by Jonas in lt_ex_diff.rds
         name = name %>%
             # asterix for Germany, Greece, and Chile
             str_replace("Chile", "Chile*") %>%
@@ -124,8 +128,16 @@ df_ex <- left_join(ex20, ex1519) %>%
 df_ex_ci <- df_ex %>%
     left_join(
         read_rds("{wd}/out/lt_ex_diff.rds" %>% glue) %>%
-            transmute(code = region_iso, sex, age = x,
-                      ex_diff_1920_q025, ex_diff_1920_q975),
+            transmute(
+                code = region_iso,
+                sex,
+                age = x,
+                ex_diff_1920_q025,
+                ex_diff_1920_q975,
+                ex_avgdiff_pre2020,
+                ex_avgdiff_pre2020_q025,
+                ex_avgdiff_pre2020_q975
+            ),
         by = c("code", "sex", "age")
 
     )
@@ -141,9 +153,12 @@ df_export <- df_ex_ci %>%
     transmute(
         name, code, sex, age,
         ex_2015, ex_2019, ex_2020,
-        ex_diff_1519, avg_ex_diff_1519,
+        ex_diff_1519,
         ex_diff_1920 = ex_diff,
         ex_diff_1920_q025, ex_diff_1920_q975,
+        ex_avgdiff_pre2020,
+        ex_avgdiff_pre2020_q025,
+        ex_avgdiff_pre2020_q975,
         rank_e0f19, rank_d0m20
     )
 
