@@ -1,0 +1,3 @@
+[submodule "COVID-19.life-expectancy.dashboard"]
+	path = COVID-19.life-expectancy.dashboard
+	url = https://github.com/ianknowles/COVID-19.life-expectancy.dashboard.git
