@@ -1,0 +1,59 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Aburto"
+  given-names: "José Manuel"
+  orcid: "https://orcid.org/0000-0002-2926-6879"
+- family-names: "Schöley"
+  given-names: "Jonas"
+  orcid: "https://orcid.org/0000-0002-3340-8518"
+- family-names: "Zhang"
+  given-names: "Luyin"
+  orcid: "https://orcid.org/0000-0002-8337-8791"
+- family-names: "Kashnitsky"
+  given-names: "Ilya"
+  orcid: "https://orcid.org/0000-0003-1835-8687"
+- family-names: "Rahal"
+  given-names: "Charles"
+  orcid: "https://orcid.org/0000-0002-1764-2697"
+- family-names: "Missov"
+  given-names: "Trifon I."
+  orcid: "https://orcid.org/0000-0002-7312-4261"
+- family-names: "Mills"
+  given-names: "Melinda C."
+  orcid: "https://orcid.org/0000-0003-1704-0001"
+- family-names: "Dowd"
+  given-names: "Jennifer B."
+  orcid: "https://orcid.org/0000-0003-2006-5656"
+- family-names: "Kashyap"
+  given-names: "Ridhi"
+  orcid: "https://orcid.org/0000-0003-0615-2868"
+contact:
+  - affiliation: "Leverhulme Centre for Demographic Science (LCDS Oxford)"
+    email: "emma.fabian@sociology.ox.ac.uk"
+    family-names: Fabian
+    given-names: Emma
+title: "Code to replicate 'Quantifying impacts of the COVID-19 pandemic through life expectancy losses'"
+commit: 11bb34e45d79af31d944f0e1f3ad19b89759fac2
+version: 0.3.1
+doi: 10.5281/zenodo.5171938
+identifiers:
+  - description: This is the collection of archived snapshots of all versions
+    type: doi
+    value: "10.5281/zenodo.4556982"
+  - description: This is the archived snapshot of version 0.3.0
+    type: doi
+    value: "10.5281/zenodo.5171935"
+  - description: This is the archived snapshot of version 0.2.0
+    type: doi
+    value: "10.5281/zenodo.4570476"
+  - description: This is the archived snapshot of version 0.1.0
+    type: doi
+    value: "10.5281/zenodo.4556983"
+  - type: url
+    value: "https://github.com/OxfordDemSci/ex2020/releases/tag/v.0.3.1"
+    description: The GitHub release URL of tag v.0.3.1.
+date-released: 2021-08-09
+license: GPL-2.0
+repository-code: "https://github.com/OxfordDemSci/ex2020"
+url : "https://covid19.demographicscience.ox.ac.uk/lifeexpectancy"
