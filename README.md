@@ -15,7 +15,7 @@
 ### Introduction
 ------------
 
-This is a repository to accompany 'Quantifying impacts of the COVID-19 pandemic through life expectancy losses: a population-level study of 29 countries'. A link to the open-access version of the paper can be found by clicking [here](https://www.medrxiv.org/content/10.1101/2021.03.02.21252772v3). The replication files for this paper include customised functionality written in the [**R**](https://www.r-project.org/) statistical programming language.
+This is a repository to accompany 'Quantifying impacts of the COVID-19 pandemic through life expectancy losses: a population-level study of 29 countries'. A link to the open-access version of the paper can be found by clicking [here](https://www.medrxiv.org/content/10.1101/2021.03.02.21252772). The replication files for this paper include customised functionality written in the [**R**](https://www.r-project.org/) statistical programming language.
 
 An interactive data visualisation relating to this work can be found here:
 
