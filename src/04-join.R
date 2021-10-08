@@ -55,4 +55,4 @@ write_csv(dat$lt_input, file = glue('{cnst$path_out}/lt_input.csv'))
 
 write.xlsx(dat$lt_input, glue('{cnst$path_out}/lt_input.xlsx'),
            keepNA = TRUE, na.string = '.',
-           firstRow = TRUE, firstCol = TRUE)
+           firstRow = TRUE, firstCol = TRUE, overwrite = TRUE)

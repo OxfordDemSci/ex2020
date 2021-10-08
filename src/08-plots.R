@@ -315,13 +315,12 @@ ggsave("{wd}/out/fig-4.pdf" %>% glue, four, width = 10, height = 8, device = cai
 # only c19 and collapse age
 
 df_dec_age_cause %>%
-    left_join(ids) %>%
     drop_na(name) %>%
     filter(!period_cause == "2015-19") %>%
     group_by(name, sex, period_cause) %>%
     summarise(ctb = ctb %>% sum(na.rm = T)) %>%
     ungroup() %>%
-    mutate(name = name %>% fct_reorder(ctb %>% desc)) %>%
+    mutate(name = name %>% fct_reorder(ctb %>% desc)) %>% View()
 
     ggplot(aes(ctb, name, fill = sex, alpha = period_cause))+
     geom_col()+

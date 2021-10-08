@@ -100,7 +100,6 @@ tab$covid_deaths_quality <-
     death_covid_date = 'Latest COVID death updates'
   )
 
-
 # Check STMF data coverage ----------------------------------------
 
 stmf <- readRDS(glue('{wd}/dat/stmf/stmf.rds'))

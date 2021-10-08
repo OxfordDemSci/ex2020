@@ -15,7 +15,7 @@ library(cowplot)
 
 ids <- readRDS("{wd}/out/ids.rds" %>% glue)
 lt1x1 <- readRDS("{wd}/dat/hmdhfd/lt-1x1.rds" %>% glue)
-ex_diff_2020 <- read_rds("{wd}/out/df_ex.rds" %>% glue)
+ex_diff_2020 <- read_rds("{wd}/out/df_ex_ci.rds" %>% glue)
 
 # small dataset with either the first year or 1900
 hmd_start <- lt1x1 %>%
@@ -31,7 +31,7 @@ hmd_start <- lt1x1 %>%
     )
 
 # add 2020
-df20 <- read_rds("{wd}/out/df_ex_ci.rds" %>% glue) %>%
+df20 <- ex_diff_2020 %>%
     filter(age == 0) %>%
     transmute(name, country = code_hmd, sex, year, e0_diff = ex_diff) %>%
     left_join(hmd_start) %>%
