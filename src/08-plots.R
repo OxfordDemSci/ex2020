@@ -320,7 +320,7 @@ df_dec_age_cause %>%
     group_by(name, sex, period_cause) %>%
     summarise(ctb = ctb %>% sum(na.rm = T)) %>%
     ungroup() %>%
-    mutate(name = name %>% fct_reorder(ctb %>% desc)) %>% View()
+    mutate(name = name %>% fct_reorder(ctb %>% desc)) %>%
 
     ggplot(aes(ctb, name, fill = sex, alpha = period_cause))+
     geom_col()+
@@ -358,7 +358,7 @@ ggsave("{wd}/out/fig-5.pdf" %>% glue, five, width = 6, height = 4, device = cair
 
 # additional fig 1 without 2020 -------------------------------------------
 
-df_ex %>%
+df_ex_ci %>%
     mutate(name = fct_reorder(name, rank_e0f19)) %>%
     filter(age %in% c(0, 60, 80)) %>%
     drop_na(name) %>%

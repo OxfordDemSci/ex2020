@@ -25,8 +25,11 @@ cnst <- within(cnst, {
   path_out = glue('{wd}/out')
 })
 
+source(glue('{wd}/cfg/fig_specs.R'))
+
 dat <- list()
 tab <- list()
+fig <- list()
 
 # Data ------------------------------------------------------------
 
@@ -105,7 +108,8 @@ tab$covid_deaths_quality <-
 stmf <- readRDS(glue('{wd}/dat/stmf/stmf.rds'))
 
 # check STMF data coverage
-stmf %>%
+fig$stmf_data_availability <-
+  stmf %>%
   mutate(
     Week =
       ifelse(Week == 'UNK', 0, Week) %>%
@@ -140,3 +144,7 @@ dat$stmf_age_pattern <-
   pivot_wider(names_from = Sex, values_from = n)
 
 #dat$stmf_age_pattern %>% View()
+
+# Export ----------------------------------------------------------
+
+fig_spec$ExportFigure(fig$stmf_data_availability, path = cnst$path_out)

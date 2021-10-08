@@ -197,16 +197,17 @@ dat$covid <-
 
 fig$covid_raw_data <-
   dat$coverage_cleaned %>%
-  filter(age_start == 80) %>%
+  group_by(region_iso, date, sex) %>%
+  summarise(death_covid = sum(death_covid)) %>%
   ggplot(aes(x = date, y = death_covid, color = sex)) +
-  geom_point() +
+  geom_point(size = 0.5) +
   geom_vline(xintercept = as_date('2020-12-31')) +
   scale_x_date(date_labels = '%b') +
   scale_color_manual(values = fig_spec$sex_colors) +
   facet_wrap(~region_iso, scales = 'free_y') +
   fig_spec$MyGGplotTheme(panel_border = TRUE, grid = 'xy') +
   labs(
-    title = 'Cumulative COVID deaths age 80, 2020',
+    title = 'Cumulative COVID deaths, 2020',
     x = 'Age', y = 'Cumulative COVID deaths'
   )
 
