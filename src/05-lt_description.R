@@ -243,6 +243,85 @@ walk(c(0, 60), ~{
     )
 })
 
+# Assemble table with ex sex differences --------------------------
+
+# central estimates of life-expectancy, annual life-expectancy difference,
+# and average annual life-expectancy difference 2015 to 2019
+dat$lt_ex_sexdiff_mean <-
+  dat$lt_ex_diff_mean %>%
+  pivot_wider(
+    id_cols = c(region_iso, year, x),
+    names_from = c(sex),
+    values_from = c(ex, ex_diff, ex_avgdiff)
+  ) %>%
+  mutate(
+    ex_sexdiff = ex_Female - ex_Male,
+    ex_diff_sexdiff = ex_diff_Female - ex_diff_Male,
+    ex_avgdiff_sexdiff = ex_avgdiff_Female - ex_avgdiff_Male
+  )
+
+# 95% uncertainty intervals around the central estimates
+dat$lt_ex_sexdiff_ci <-
+  dat$lt_85_sim %>%
+  filter(year %in% c(2015:2020)) %>%
+  select(id_sim, region_iso, sex, year, x, mx, ex) %>%
+  arrange(id_sim, region_iso, sex, x, year) %>%
+  group_by(id_sim, region_iso, sex, x) %>%
+  mutate(
+    ex_diff = c(diff(ex), NA),
+    ex_avgdiff = mean(ifelse(year %in% 2015:2018, ex_diff, NA), na.rm = TRUE)
+  ) %>%
+  pivot_wider(
+    id_cols = c(id_sim, region_iso, year, x),
+    names_from = c(sex),
+    values_from = c(ex, ex_diff, ex_avgdiff)
+  ) %>%
+  mutate(
+    ex_sexdiff = ex_Female - ex_Male,
+    ex_diff_sexdiff = ex_diff_Female - ex_diff_Male,
+    ex_avgdiff_sexdiff = ex_avgdiff_Female - ex_avgdiff_Male
+  ) %>%
+  group_by(region_iso, x, year) %>%
+  summarise(
+    ex_sexdiff_q025 = quantile(ex_sexdiff, 0.025, na.rm = TRUE),
+    ex_sexdiff_q975 = quantile(ex_sexdiff, 0.975, na.rm = TRUE),
+    ex_diff_sexdiff_q025 = quantile(ex_diff_sexdiff, 0.025, na.rm = TRUE),
+    ex_diff_sexdiff_q975 = quantile(ex_diff_sexdiff, 0.975, na.rm = TRUE),
+    ex_avgdiff_sexdiff_q025 = quantile(ex_avgdiff_sexdiff, 0.025, na.rm = TRUE),
+    ex_avgdiff_sexdiff_q975 = quantile(ex_avgdiff_sexdiff, 0.975, na.rm = TRUE),
+  ) %>%
+  ungroup()
+
+dat$lt_ex_sexdiff <-
+  left_join(dat$lt_ex_sexdiff_mean, dat$lt_ex_sexdiff_ci)
+
+# Plot sex diff ---------------------------------------------------
+
+dat$lt_ex_sexdiff %>%
+  filter(x == 0, year == 2019, ex_diff_Female < 0, ex_diff_Male < 0) %>%
+  ggplot(aes(x = fct_reorder(region_iso, ex_diff_sexdiff),
+             xend = region_iso,
+             y = ex_diff_sexdiff_q025,
+             yend = ex_diff_sexdiff_q975)) +
+  geom_hline(yintercept = 0, color = 'grey', size = 1.5) +
+  geom_point(aes(y = ex_diff_sexdiff)) +
+  geom_point(aes(y = ex_avgdiff_sexdiff), shape = 1) +
+  geom_segment() +
+  annotate(
+    'text', x = 12, y = -1.25,
+    label = 'Higher life expectancy loss for females'
+  ) +
+  annotate(
+    'text', x = 12, y = 1.25,
+    label = 'Higher life expectancy loss for males'
+  ) +
+  fig_spec$MyGGplotTheme(family = 'Roboto') +
+  labs(
+    title = 'Sex differences in the loss of life expectancy from 2019 to 2020',
+    subtitle = '95% prediction intervals from Poisson sampling of age specific death counts.\nOpen circles show average sex difference in ',
+    y = 'Years', x = NULL
+  )
+  
 # Plot ex changes -------------------------------------------------
 
 # plot changes in remaining e0, e60
